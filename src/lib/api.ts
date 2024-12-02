@@ -45,4 +45,17 @@ export const movieApi = {
     const response = await api.get<MovieResponse>('/trending/movie/day');
     return response.data;
   },
+
+  getMovieVideos: async (id: number) => {
+    const response = await api.get<{
+      results: {
+        key: string;
+        type: string;
+        site: string;
+      }[];
+    }>(`/movie/${id}/videos`);
+    return response.data.results.find(
+      (video) => video.type === "Trailer" && video.site === "YouTube"
+    );
+  },
 }; 
