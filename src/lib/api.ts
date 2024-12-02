@@ -30,5 +30,14 @@ export const movieApi = {
   getSimilarMovies: async (id: number) => {
     const response = await api.get<MovieResponse>(`/movie/${id}/similar`);
     return response.data;
-  }
+  },
+
+  searchMovies: async (query: string) => {
+    const response = await api.get<MovieResponse>('/search/movie', {
+      params: {
+        query,
+      },
+    });
+    return response.data;
+  },
 }; 

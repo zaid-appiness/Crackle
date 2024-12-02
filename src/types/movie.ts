@@ -10,10 +10,10 @@ export interface Movie {
 }
 
 export interface MovieDetails extends Movie {
-  genres: { id: number; name: string }[];
   runtime: number;
-  status: string;
-  tagline: string;
+  backdrop_path: string;
+  overview: string;
+  vote_average: number;
 }
 
 export interface MovieResponse {
