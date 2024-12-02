@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { movieApi } from "@/lib/api";
 import { Movie, MovieDetails } from "@/types/movie";
 import Image from "next/image";
 import Loading from "@/components/Loading";
 
-export default function MoviePage({ params }: { params: { id: string } }) {
+export default function MoviePage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,10 +18,14 @@ export default function MoviePage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const movieData = await movieApi.getMovieDetails(Number(params.id));
-        const similarData = await movieApi.getSimilarMovies(Number(params.id));
-        setMovie(movieData);
-        setSimilarMovies(similarData.results.slice(0, 6));
+        if (params?.id) {
+          const movieData = await movieApi.getMovieDetails(Number(params.id));
+          const similarData = await movieApi.getSimilarMovies(
+            Number(params.id)
+          );
+          setMovie(movieData);
+          setSimilarMovies(similarData.results.slice(0, 6));
+        }
       } catch (error) {
         console.error("Error fetching movie:", error);
       } finally {
@@ -27,7 +34,7 @@ export default function MoviePage({ params }: { params: { id: string } }) {
     };
 
     fetchMovie();
-  }, [params.id]);
+  }, [params?.id]);
 
   if (loading) return <Loading />;
   if (!movie) return <div>Movie not found</div>;
@@ -73,7 +80,8 @@ export default function MoviePage({ params }: { params: { id: string } }) {
                   <motion.div
                     key={movie.id}
                     whileHover={{ scale: 1.05 }}
-                    className="relative aspect-[2/3]"
+                    className="relative aspect-[2/3] cursor-pointer"
+                    onClick={() => router.push(`/movie/${movie.id}`)}
                   >
                     <Image
                       src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}

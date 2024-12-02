@@ -40,4 +40,9 @@ export const movieApi = {
     });
     return response.data;
   },
+
+  getTrendingMovies: async () => {
+    const response = await api.get<MovieResponse>('/trending/movie/day');
+    return response.data;
+  },
 }; 

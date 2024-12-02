@@ -31,6 +31,12 @@ export default function SearchBar() {
     }
   };
 
+  const handleMovieClick = (movieId: number) => {
+    router.push(`/movie/${movieId}`);
+    setResults([]); // Clear results
+    setQuery(""); // Clear search input
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -68,7 +74,7 @@ export default function SearchBar() {
                   key={movie.id}
                   whileHover={{ backgroundColor: "rgba(55, 65, 81, 0.5)" }}
                   className="p-3 cursor-pointer border-b border-gray-700 last:border-b-0"
-                  onClick={() => router.push(`/movie/${movie.id}`)}
+                  onClick={() => handleMovieClick(movie.id)}
                 >
                   <h3 className="font-medium text-white">{movie.title}</h3>
                   <p className="text-sm text-gray-400">
