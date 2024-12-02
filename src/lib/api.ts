@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { MovieResponse, MovieDetails } from '@/types/movie';
 
-const API_KEY = process.env.API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 const api = axios.create({
   baseURL: BASE_URL,
-  params: { api_key: API_KEY },
+  params: { api_key: process.env.NEXT_PUBLIC_API_KEY },
+  headers: {
+    'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+  },
 });
 
 export const movieApi = {
