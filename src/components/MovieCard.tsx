@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Movie } from "@/types/movie";
 import MovieCardSkeleton from "./MovieCardSkeleton";
 import { FaStar, FaCalendar, FaPlayCircle } from "react-icons/fa";
@@ -14,7 +13,6 @@ interface MovieCardProps {
 }
 
 export default function MovieCard({ movie }: MovieCardProps) {
-  const router = useRouter();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -22,7 +20,6 @@ export default function MovieCard({ movie }: MovieCardProps) {
     <motion.div
       whileHover={{ scale: 1.05 }}
       className="relative aspect-[2/3] rounded-lg overflow-hidden cursor-pointer group"
-      onClick={() => router.push(`/movie/${movie.id}`)}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >

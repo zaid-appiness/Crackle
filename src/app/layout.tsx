@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Navbar from "@/components/Navbar";
-import SearchBar from "@/components/SearchBar";
 import PageWrapper from "@/components/PageWrapper";
 import Providers from "@/components/Providers";
 import "./globals.css";
@@ -34,7 +33,6 @@ export default function RootLayout({
       >
         <Providers>
           <Navbar />
-          <SearchBar />
           <main className="flex-grow w-full">
             <div className="container mx-auto px-4 py-8">
               <PageWrapper>{children}</PageWrapper>

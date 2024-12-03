@@ -9,6 +9,7 @@ import Loading from "@/components/Loading";
 import Hero from "@/components/Hero";
 import { generateId } from "@/utils/generateId";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [page, setPage] = useState(1);
@@ -26,6 +27,8 @@ export default function Home() {
     queryKey: ["movies", "popular", page],
     queryFn: () => movieApi.getPopularMovies(page),
   });
+
+  const router = useRouter();
 
   if (isLoading || !trendingData) return <Loading />;
   if (error) throw error;
@@ -78,11 +81,34 @@ export default function Home() {
     return passesRating && passesGenre;
   });
 
+  const handleContainerClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    // Handle movie card clicks
+    const movieCard = target.closest("[data-movie-id]");
+    if (movieCard) {
+      const movieId = movieCard.getAttribute("data-movie-id");
+      router.push(`/movie/${movieId}`);
+      return;
+    }
+
+    // Handle pagination clicks
+    const pageButton = target.closest("[data-page]");
+    if (pageButton) {
+      const page = pageButton.getAttribute("data-page");
+      if (page !== "...") {
+        handlePageChange(Number(page));
+      }
+      return;
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="space-y-12"
+      onClick={handleContainerClick}
     >
       <Hero movie={trendingData.results[0]} />
 
@@ -120,6 +146,7 @@ export default function Home() {
               <motion.div
                 key={generateId("home-movie", movie.id, index)}
                 className="relative"
+                data-movie-id={movie.id}
               >
                 <MovieCard movie={movie} index={index} />
               </motion.div>
@@ -127,10 +154,10 @@ export default function Home() {
           </Suspense>
         </motion.div>
 
-        {/* Pagination */}
+        {/* Pagination with data attributes */}
         <div className="flex justify-center items-center gap-2 py-8">
           <button
-            onClick={() => handlePageChange(currentPage - 1)}
+            data-page={currentPage - 1}
             disabled={currentPage === 1}
             className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
             disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
@@ -142,10 +169,12 @@ export default function Home() {
             {getVisiblePages().map((pageNum, index) => (
               <div key={index}>
                 {pageNum === "..." ? (
-                  <span className="text-gray-400 px-2">{pageNum}</span>
+                  <span className="text-gray-400 px-2" data-page="...">
+                    {pageNum}
+                  </span>
                 ) : (
                   <button
-                    onClick={() => handlePageChange(Number(pageNum))}
+                    data-page={pageNum}
                     className={`px-4 py-2 rounded-lg transition-colors ${
                       pageNum === currentPage
                         ? "bg-blue-600 text-white"
@@ -160,7 +189,7 @@ export default function Home() {
           </div>
 
           <button
-            onClick={() => handlePageChange(currentPage + 1)}
+            data-page={currentPage + 1}
             disabled={currentPage === totalPages}
             className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
             disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
