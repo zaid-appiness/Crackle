@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "latest",
+    "@tanstack/react-query-devtools": "^5.62.2",
     "axios": "latest",
     "framer-motion": "latest",
     "next": "latest",
