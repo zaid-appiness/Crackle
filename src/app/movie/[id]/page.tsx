@@ -59,7 +59,8 @@ export default function MoviePage() {
             fill
             className="object-cover"
             priority
-            onLoadingComplete={() => setImageLoaded(true)}
+            onLoad={() => setImageLoaded(true)}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         </motion.div>
@@ -106,6 +107,8 @@ export default function MoviePage() {
                     alt={movie.title}
                     fill
                     className="object-cover rounded-lg"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority
                   />
                 </motion.div>
               ))}
