@@ -2,6 +2,7 @@ import axios from 'axios';
 import { MovieResponse, MovieDetails } from '@/types/movie';
 
 const BASE_URL = 'https://api.themoviedb.org/3';
+const VIDSRC_BASE_URL = 'https://vidsrc.xyz/embed/movie';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -51,16 +52,44 @@ export const movieApi = {
     return response.data;
   },
 
-  getMovieVideos: async (id: number) => {
-    const response = await api.get<{
-      results: {
+  getMovieStream: async (tmdbId: number) => {
+    // First try to get official trailer
+    const trailerResponse = await api.get<{
+      results: Array<{
         key: string;
-        type: string;
         site: string;
-      }[];
-    }>(`/movie/${id}/videos`);
-    return response.data.results.find(
-      (video) => video.type === "Trailer" && video.site === "YouTube"
+        type: string;
+        official: boolean;
+      }>;
+    }>(`/movie/${tmdbId}/videos`);
+
+    const officialTrailer = trailerResponse.data.results.find(
+      video => video.official && video.type === "Trailer" && video.site === "YouTube"
     );
+
+    if (officialTrailer) {
+      return {
+        type: 'youtube',
+        key: officialTrailer.key
+      };
+    }
+
+    // Fallback to movie stream
+    return {
+      type: 'stream',
+      url: `${VIDSRC_BASE_URL}/${tmdbId}`
+    };
+  },
+
+  getMovieReviews: async (id: number) => {
+    const response = await api.get<{ results: Array<{ id: string; content: string; author: string }> }>(
+      `/movie/${id}/reviews`
+    );
+    return response.data;
+  },
+
+  getMovieRecommendations: async (id: number) => {
+    const response = await api.get<MovieResponse>(`/movie/${id}/recommendations`);
+    return response.data;
   },
 }; 

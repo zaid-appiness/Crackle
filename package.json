@@ -17,6 +17,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-icons": "latest",
+    "react-player": "^2.16.0",
     "zustand": "latest"
   },
   "devDependencies": {

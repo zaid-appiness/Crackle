@@ -1,17 +1,31 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { movieApi } from "@/lib/api";
 import Image from "next/image";
-import { FaStar, FaClock, FaCalendar, FaPlay, FaImdb } from "react-icons/fa";
+import {
+  FaStar,
+  FaClock,
+  FaCalendar,
+  FaPlay,
+  FaVolumeUp,
+  FaVolumeMute,
+  FaPause,
+} from "react-icons/fa";
 import Loading from "@/components/Loading";
 import MovieCard from "@/components/MovieCard";
 import { useParams } from "next/navigation";
+import { useState, useRef } from "react";
+import ReactPlayer from "react-player";
 
 export default function MovieDetailPage() {
   const params = useParams();
   const movieId = Number(params.id);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const playerRef = useRef<ReactPlayer>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
 
   const { data: movie, isLoading: isLoadingMovie } = useQuery({
     queryKey: ["movie", movieId],
@@ -24,10 +38,9 @@ export default function MovieDetailPage() {
     enabled: !!movie,
   });
 
-  const { data: videoData } = useQuery({
-    queryKey: ["video", movieId],
-    queryFn: () => movieApi.getMovieVideos(movieId),
-    enabled: !!movie,
+  const { data: videoSource } = useQuery({
+    queryKey: ["movie-stream", movieId],
+    queryFn: () => movieApi.getMovieStream(movieId),
   });
 
   if (isLoadingMovie) return <Loading />;
@@ -35,16 +48,68 @@ export default function MovieDetailPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section with Backdrop */}
+      {/* Hero Section with Backdrop/Video */}
       <div className="relative h-[70vh] w-full">
-        <Image
-          src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-          alt={movie.title}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        <AnimatePresence mode="wait">
+          {!isPlaying ? (
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
+                alt={movie.title}
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="player"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black"
+            >
+              <ReactPlayer
+                ref={playerRef}
+                url={
+                  videoSource?.type === "youtube"
+                    ? `https://www.youtube.com/watch?v=${videoSource.key}`
+                    : videoSource?.url
+                }
+                width="100%"
+                height="100%"
+                playing={isVideoPlaying}
+                muted={isMuted}
+                controls={false}
+                style={{ position: "absolute", top: 0, left: 0 }}
+                config={{
+                  youtube: {
+                    playerVars: {
+                      showinfo: 0,
+                      modestbranding: 1,
+                      rel: 0,
+                      controls: 0,
+                      disablekb: 1,
+                      iv_load_policy: 3,
+                      fs: 0,
+                      playsinline: 1,
+                      enablejsapi: 1,
+                      origin: window.location.origin,
+                    },
+                  },
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Movie Info Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-8">
@@ -94,30 +159,56 @@ export default function MovieDetailPage() {
               </p>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 pt-4">
-                {videoData && (
-                  <a
-                    href={`https://www.youtube.com/watch?v=${videoData.key}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+              <div className="flex items-center gap-4 pt-4">
+                {videoSource && (
+                  <motion.button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg 
-                    hover:bg-red-700 transition-colors"
+                    hover:bg-red-500 transition-colors group"
                   >
-                    <FaPlay />
-                    Watch Trailer
-                  </a>
+                    <FaPlay className="group-hover:animate-pulse" />
+                    {isPlaying ? "Watch Poster" : "Watch Trailer"}
+                  </motion.button>
                 )}
-                {"imdb_id" in movie && (
-                  <a
-                    href={`https://www.imdb.com/title/${movie.imdb_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-black rounded-lg 
-                    hover:bg-yellow-400 transition-colors"
-                  >
-                    <FaImdb className="text-xl" />
-                    IMDb
-                  </a>
+                {isPlaying && (
+                  <div className="flex gap-4">
+                    <motion.button
+                      whileHover={{
+                        scale: 1.05,
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsVideoPlaying(!isVideoPlaying)}
+                      className="flex items-center justify-center w-12 h-12 rounded-full 
+                      bg-white/5 backdrop-blur-sm border border-white/10 transition-all 
+                      hover:border-white/20 group"
+                    >
+                      {isVideoPlaying ? (
+                        <FaPause className="text-white/70 text-xl group-hover:text-white transition-colors" />
+                      ) : (
+                        <FaPlay className="text-white/70 text-xl group-hover:text-white transition-colors" />
+                      )}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{
+                        scale: 1.05,
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsMuted(!isMuted)}
+                      className="flex items-center justify-center w-12 h-12 rounded-full 
+                      bg-white/5 backdrop-blur-sm border border-white/10 transition-all 
+                      hover:border-white/20 group"
+                    >
+                      {isMuted ? (
+                        <FaVolumeMute className="text-white/70 text-xl group-hover:text-white transition-colors" />
+                      ) : (
+                        <FaVolumeUp className="text-white/70 text-xl group-hover:text-white transition-colors" />
+                      )}
+                    </motion.button>
+                  </div>
                 )}
               </div>
             </motion.div>

@@ -12,6 +12,7 @@ import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import { useRouter } from "next/navigation";
 import MovieGridSkeleton from "@/components/MovieGridSkeleton";
 import NoResults from "@/components/NoResults";
+import HeroSkeleton from "@/components/HeroSkeleton";
 
 export default function Home() {
   const [page, setPage] = useState(1);
@@ -39,7 +40,15 @@ export default function Home() {
 
   const router = useRouter();
 
-  if (isLoading || !trendingData) return <MovieGridSkeleton />;
+  if (isLoading || !trendingData)
+    return (
+      <div className="min-h-screen">
+        <HeroSkeleton />
+        <div className="container mx-auto px-4 py-8">
+          <MovieGridSkeleton />
+        </div>
+      </div>
+    );
   if (error) throw error;
 
   const totalPages = Math.min(data?.total_pages ?? 0, 500);
