@@ -6,7 +6,7 @@ const VIDSRC_BASE_URL = 'https://vidsrc.xyz/embed/movie';
 
 // Log the API key in development (remove in production)
 if (process.env.NODE_ENV === 'development') {
-  console.log('API Key:', process.env.NEXT_PUBLIC_API_KEY);
+  // console.log('API Key:', process.env.NEXT_PUBLIC_API_KEY);
 }
 
 const api = axios.create({
@@ -24,7 +24,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Request:', config.url, config.params);
+      // console.log('Request:', config.url, config.params);
     }
     return config;
   },
