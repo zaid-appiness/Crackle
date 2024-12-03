@@ -2,12 +2,13 @@
 const nextConfig = {
   images: {
     domains: ["image.tmdb.org"],
+    unoptimized: true,
   },
   typescript: {
-    ignoreBuildErrors: true, // Only use during deployment if you're confident about your types
+    ignoreBuildErrors: true,
   },
   eslint: {
-    ignoreDuringBuilds: true, // Only use during deployment if you're confident about your code
+    ignoreDuringBuilds: true,
   },
 };
 

@@ -11,6 +11,8 @@ import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import { useRouter } from "next/navigation";
 import NoResults from "@/components/NoResults";
 
+export const dynamic = "force-dynamic";
+
 export default function TopRatedPage() {
   const router = useRouter();
   const [filters, setFilters] = useState<FilterState>({

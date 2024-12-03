@@ -6,11 +6,27 @@ const VIDSRC_BASE_URL = 'https://vidsrc.xyz/embed/movie';
 
 const api = axios.create({
   baseURL: BASE_URL,
-  params: { api_key: process.env.NEXT_PUBLIC_API_KEY },
+  params: { 
+    api_key: process.env.NEXT_PUBLIC_API_KEY || ''
+  },
   headers: {
     'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
   },
+  timeout: 10000,
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error('API Key error:', error);
+      return Promise.resolve({ 
+        data: { results: [], total_pages: 0, page: 1, total_results: 0 } 
+      });
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const movieApi = {
   getPopularMovies: async (page: number = 1) => {

@@ -21,6 +21,11 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Crackle - Movie App",
   description: "Watch your favorite movies and TV shows",
+  viewport: "width=device-width, initial-scale=1",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
