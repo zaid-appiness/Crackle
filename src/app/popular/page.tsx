@@ -8,8 +8,10 @@ import Loading from "@/components/Loading";
 import { generateId } from "@/utils/generateId";
 import { useState } from "react";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
+import { useRouter } from "next/navigation";
 
 export default function PopularPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<FilterState>({
     rating: 0,
@@ -72,6 +74,15 @@ export default function PopularPage() {
     return rangeWithDots;
   };
 
+  const handleContainerClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const movieCard = target.closest("[data-movie-id]");
+    if (movieCard) {
+      const movieId = movieCard.getAttribute("data-movie-id");
+      router.push(`/movie/${movieId}`);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -110,15 +121,14 @@ export default function PopularPage() {
       ) : (
         <>
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            onClick={handleContainerClick}
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
           >
             {filteredMovies.map((movie, index) => (
               <motion.div
                 key={generateId("popular-movie", movie.id, index)}
                 className="relative"
+                data-movie-id={movie.id}
               >
                 <MovieCard movie={movie} index={index} />
               </motion.div>

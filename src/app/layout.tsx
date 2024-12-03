@@ -6,6 +6,7 @@ import Providers from "@/components/Providers";
 import ScrollToTop from "@/components/ScrollToTop";
 import "./globals.css";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import FloatingMenu from "@/components/FloatingMenu";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -42,6 +43,7 @@ export default function RootLayout({
               </ErrorBoundary>
             </div>
           </main>
+          <FloatingMenu />
           <ScrollToTop />
         </Providers>
       </body>
