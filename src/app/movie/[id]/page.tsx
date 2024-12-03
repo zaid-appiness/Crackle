@@ -11,21 +11,32 @@ import {
   FaPlay,
   FaVolumeUp,
   FaVolumeMute,
-  FaPause,
 } from "react-icons/fa";
 import Loading from "@/components/Loading";
 import MovieCard from "@/components/MovieCard";
 import { useParams } from "next/navigation";
-import { useState, useRef } from "react";
-import ReactPlayer from "react-player";
+import { useState, useEffect, useRef } from "react";
 
 export default function MovieDetailPage() {
   const params = useParams();
   const movieId = Number(params.id);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const playerRef = useRef<ReactPlayer>(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Handle mute/unmute using YouTube API
+  useEffect(() => {
+    if (isPlaying && iframeRef.current) {
+      // Post message to YouTube player
+      iframeRef.current.contentWindow?.postMessage(
+        JSON.stringify({
+          event: "command",
+          func: isMuted ? "mute" : "unMute",
+        }),
+        "*"
+      );
+    }
+  }, [isMuted, isPlaying]);
 
   const { data: movie, isLoading: isLoadingMovie } = useQuery({
     queryKey: ["movie", movieId],
@@ -77,42 +88,26 @@ export default function MovieDetailPage() {
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black"
             >
-              <ReactPlayer
-                ref={playerRef}
-                url={
-                  videoSource?.type === "youtube"
-                    ? `https://www.youtube.com/watch?v=${videoSource.key}`
-                    : videoSource?.url
-                }
-                width="100%"
-                height="100%"
-                playing={isVideoPlaying}
-                muted={isMuted}
-                controls={false}
-                style={{ position: "absolute", top: 0, left: 0 }}
-                config={{
-                  youtube: {
-                    playerVars: {
-                      showinfo: 0,
-                      modestbranding: 1,
-                      rel: 0,
-                      controls: 0,
-                      disablekb: 1,
-                      iv_load_policy: 3,
-                      fs: 0,
-                      playsinline: 1,
-                      enablejsapi: 1,
-                      origin: window.location.origin,
-                    },
-                  },
-                }}
+              <div className="absolute inset-0 z-10" />
+
+              <iframe
+                ref={iframeRef}
+                src={`https://www.youtube.com/embed/${
+                  videoSource?.key
+                }?autoplay=1&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=1&origin=${
+                  typeof window !== "undefined" ? window.location.origin : ""
+                }`}
+                className="w-full h-full"
+                allow="autoplay"
+                style={{ border: "none", pointerEvents: "none" }}
+                frameBorder="0"
               />
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Movie Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-8">
+        <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
           <div className="container mx-auto flex gap-8 items-end">
             {/* Poster */}
             <motion.div
@@ -159,7 +154,7 @@ export default function MovieDetailPage() {
               </p>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-4 pt-4">
+              <div className="flex items-center gap-4 pt-4 relative z-30">
                 {videoSource && (
                   <motion.button
                     onClick={() => setIsPlaying(!isPlaying)}
@@ -180,27 +175,10 @@ export default function MovieDetailPage() {
                         backgroundColor: "rgba(255, 255, 255, 0.1)",
                       }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setIsVideoPlaying(!isVideoPlaying)}
-                      className="flex items-center justify-center w-12 h-12 rounded-full 
-                      bg-white/5 backdrop-blur-sm border border-white/10 transition-all 
-                      hover:border-white/20 group"
-                    >
-                      {isVideoPlaying ? (
-                        <FaPause className="text-white/70 text-xl group-hover:text-white transition-colors" />
-                      ) : (
-                        <FaPlay className="text-white/70 text-xl group-hover:text-white transition-colors" />
-                      )}
-                    </motion.button>
-                    <motion.button
-                      whileHover={{
-                        scale: 1.05,
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      }}
-                      whileTap={{ scale: 0.95 }}
                       onClick={() => setIsMuted(!isMuted)}
                       className="flex items-center justify-center w-12 h-12 rounded-full 
                       bg-white/5 backdrop-blur-sm border border-white/10 transition-all 
-                      hover:border-white/20 group"
+                      hover:border-white/20 group z-30"
                     >
                       {isMuted ? (
                         <FaVolumeMute className="text-white/70 text-xl group-hover:text-white transition-colors" />
