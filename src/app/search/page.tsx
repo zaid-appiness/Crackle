@@ -7,11 +7,17 @@ import { movieApi } from "@/lib/api";
 import MovieCard from "@/components/MovieCard";
 import Loading from "@/components/Loading";
 import { generateId } from "@/utils/generateId";
+import MovieFilters, { FilterState } from "@/components/MovieFilters";
+import { useState } from "react";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
+  const [filters, setFilters] = useState<FilterState>({
+    rating: 0,
+    genre: null,
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["search", query],
@@ -32,13 +38,19 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-4xl font-bold text-white mb-8"
-      >
-        Search Results for &ldquo;{query}&rdquo;
-      </motion.h1>
+      <div className="flex justify-between items-center mb-8">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-bold text-white"
+        >
+          Search Results for &quot;{query}&quot;
+        </motion.h1>
+        <MovieFilters
+          onFilterChange={setFilters}
+          onReset={() => setFilters({ rating: 0, genre: null })}
+        />
+      </div>
 
       {data?.results.length === 0 ? (
         <motion.p
@@ -46,7 +58,7 @@ export default function SearchPage() {
           animate={{ opacity: 1 }}
           className="text-gray-400 text-xl text-center my-12"
         >
-          No results found for &ldquo;{query}&rdquo;
+          No results found for &quot;{query}&quot;
         </motion.p>
       ) : (
         <motion.div
@@ -62,15 +74,22 @@ export default function SearchPage() {
           initial="hidden"
           animate="show"
         >
-          {data?.results.map((movie, index) => (
-            <motion.div
-              key={generateId("search-movie", movie.id, index)}
-              className="relative"
-              data-movie-id={movie.id}
-            >
-              <MovieCard movie={movie} index={index} />
-            </motion.div>
-          ))}
+          {data?.results
+            .filter((movie) => {
+              const passesRating = movie.vote_average >= filters.rating;
+              const passesGenre =
+                !filters.genre || movie.genre_ids.includes(filters.genre);
+              return passesRating && passesGenre;
+            })
+            .map((movie, index) => (
+              <motion.div
+                key={generateId("search-movie", movie.id, index)}
+                className="relative"
+                data-movie-id={movie.id}
+              >
+                <MovieCard movie={movie} index={index} />
+              </motion.div>
+            ))}
         </motion.div>
       )}
     </div>

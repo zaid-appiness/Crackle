@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiFilter } from "react-icons/fi";
+import { FaFilter, FaStar, FaTimes } from "react-icons/fa";
+import { genres } from "@/utils/constants";
 
 interface FilterProps {
   onFilterChange: (filters: FilterState) => void;
@@ -14,108 +15,182 @@ export interface FilterState {
   genre: number | null;
 }
 
-const genres = [
-  { id: 28, name: "Action" },
-  { id: 12, name: "Adventure" },
-  { id: 16, name: "Animation" },
-  { id: 35, name: "Comedy" },
-  { id: 80, name: "Crime" },
-  { id: 18, name: "Drama" },
-  { id: 14, name: "Fantasy" },
-  { id: 27, name: "Horror" },
-  { id: 10749, name: "Romance" },
-  { id: 878, name: "Science Fiction" },
-  { id: 53, name: "Thriller" },
-];
-
 export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
+  const filterRef = useRef<HTMLDivElement>(null);
+  const [activeFilters, setActiveFilters] = useState<FilterState>({
     rating: 0,
     genre: null,
   });
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
+    const updatedFilters = { ...activeFilters, ...newFilters };
+    setActiveFilters(updatedFilters);
     onFilterChange(updatedFilters);
   };
 
   const handleReset = () => {
-    setFilters({ rating: 0, genre: null });
+    setActiveFilters({ rating: 0, genre: null });
     onReset();
   };
 
   return (
-    <div className="relative">
+    <div className="relative z-50" ref={filterRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg 
-        hover:bg-gray-700 transition-colors"
+        className="group flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gray-800/80 to-gray-900/80 
+        hover:from-gray-700/80 hover:to-gray-800/80 text-gray-300 rounded-xl transition-all duration-300 
+        backdrop-blur-sm border border-gray-700/50 shadow-lg hover:shadow-gray-900/20"
       >
-        <FiFilter />
-        Filters
+        <FaFilter
+          className={`transition-all duration-300 ${
+            activeFilters.rating > 0 || activeFilters.genre !== null
+              ? "text-purple-500 rotate-180 scale-110"
+              : "text-gray-400 group-hover:scale-110"
+          }`}
+        />
+        <span className="hidden sm:inline">Filters</span>
+        {(activeFilters.rating > 0 || activeFilters.genre !== null) && (
+          <span
+            className="flex items-center justify-center w-5 h-5 text-xs bg-purple-500 
+          text-white rounded-full animate-pulse"
+          >
+            {(activeFilters.rating > 0 ? 1 : 0) + (activeFilters.genre ? 1 : 0)}
+          </span>
+        )}
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full mt-2 right-0 w-64 bg-gray-800 rounded-lg 
-            shadow-lg p-4 z-50"
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="fixed inset-x-4 bottom-4 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-4 
+            w-auto sm:w-[320px] md:w-[380px] bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-md 
+            rounded-2xl shadow-xl border border-gray-700/50 overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-semibold">Filters</h3>
-              <button
-                onClick={handleReset}
-                className="text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                Reset
-              </button>
-            </div>
-
-            {/* Rating Filter */}
-            <div className="mb-4">
-              <label className="block text-white text-sm mb-2">
-                Minimum Rating: {filters.rating}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                step="0.5"
-                value={filters.rating}
-                onChange={(e) =>
-                  handleFilterChange({ rating: parseFloat(e.target.value) })
-                }
-                className="w-full"
-              />
-            </div>
-
-            {/* Genre Filter */}
-            <div>
-              <label className="block text-white text-sm mb-2">Genre</label>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {genres.map((genre) => (
-                  <button
-                    key={genre.id}
-                    onClick={() =>
-                      handleFilterChange({
-                        genre: filters.genre === genre.id ? null : genre.id,
-                      })
-                    }
-                    className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                      filters.genre === genre.id
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-300 hover:bg-gray-700"
-                    }`}
-                  >
-                    {genre.name}
-                  </button>
-                ))}
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-white">Filters</h3>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaTimes />
+                </button>
               </div>
+
+              {/* Rating Filter */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+                  Minimum Rating
+                  {activeFilters.rating > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-500 rounded-full"
+                    >
+                      {activeFilters.rating}.0+
+                    </motion.span>
+                  )}
+                </h3>
+                <div className="flex gap-2 bg-gray-800/30 p-3 rounded-xl">
+                  {[...Array(5)].map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() =>
+                        handleFilterChange({ rating: (index + 1) * 2 })
+                      }
+                      className="group relative flex-1 p-2"
+                    >
+                      <FaStar
+                        className={`w-full h-full transition-all duration-300 transform 
+                        ${
+                          (index + 1) * 2 <= activeFilters.rating
+                            ? "text-yellow-500 scale-110"
+                            : "text-gray-600 group-hover:text-gray-500 group-hover:scale-110"
+                        }`}
+                      />
+                      <span
+                        className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 
+                      text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity 
+                      whitespace-nowrap shadow-lg"
+                      >
+                        {(index + 1) * 2}.0+
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Genre Filter */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+                  Genre
+                  {activeFilters.genre && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-500 rounded-full"
+                    >
+                      {genres.find((g) => g.id === activeFilters.genre)?.name}
+                    </motion.span>
+                  )}
+                </h3>
+                <div
+                  className="grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto 
+                pr-2 scrollbar-thin scrollbar-track-gray-800/50 scrollbar-thumb-gray-600/50"
+                >
+                  {genres.map((genre) => (
+                    <button
+                      key={genre.id}
+                      onClick={() =>
+                        handleFilterChange({
+                          genre:
+                            activeFilters.genre === genre.id ? null : genre.id,
+                        })
+                      }
+                      className={`px-4 py-2.5 text-sm rounded-xl transition-all duration-300 transform 
+                      hover:scale-[1.02] ${
+                        activeFilters.genre === genre.id
+                          ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium shadow-lg"
+                          : "bg-gray-800/50 text-gray-400 hover:bg-gray-800 hover:text-white"
+                      }`}
+                    >
+                      {genre.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reset Button */}
+              {(activeFilters.rating > 0 || activeFilters.genre !== null) && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  onClick={handleReset}
+                  className="w-full mt-6 px-4 py-3 bg-gradient-to-r from-red-500/10 to-red-600/10 
+                  text-red-500 rounded-xl hover:from-red-500/20 hover:to-red-600/20 hover:text-red-400 
+                  transition-all duration-300 font-medium"
+                >
+                  Reset Filters
+                </motion.button>
+              )}
             </div>
           </motion.div>
         )}

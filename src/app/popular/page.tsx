@@ -7,9 +7,14 @@ import MovieCard from "@/components/MovieCard";
 import Loading from "@/components/Loading";
 import { generateId } from "@/utils/generateId";
 import { useState } from "react";
+import MovieFilters, { FilterState } from "@/components/MovieFilters";
 
 export default function PopularPage() {
   const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<FilterState>({
+    rating: 0,
+    genre: null,
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["movies", "popular", page],
@@ -66,13 +71,19 @@ export default function PopularPage() {
       animate={{ opacity: 1 }}
       className="space-y-8"
     >
-      <motion.h1
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="text-4xl font-bold text-white"
-      >
-        Popular Movies
-      </motion.h1>
+      <div className="flex justify-between items-center">
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="text-4xl font-bold text-white"
+        >
+          Popular Movies
+        </motion.h1>
+        <MovieFilters
+          onFilterChange={setFilters}
+          onReset={() => setFilters({ rating: 0, genre: null })}
+        />
+      </div>
 
       <motion.div
         initial={{ y: 20, opacity: 0 }}
@@ -80,14 +91,21 @@ export default function PopularPage() {
         transition={{ delay: 0.2 }}
         className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
       >
-        {data?.results.map((movie, index) => (
-          <motion.div
-            key={generateId("popular-movie", movie.id, index)}
-            className="relative"
-          >
-            <MovieCard movie={movie} index={index} />
-          </motion.div>
-        ))}
+        {data?.results
+          .filter((movie) => {
+            const passesRating = movie.vote_average >= filters.rating;
+            const passesGenre =
+              !filters.genre || movie.genre_ids.includes(filters.genre);
+            return passesRating && passesGenre;
+          })
+          .map((movie, index) => (
+            <motion.div
+              key={generateId("popular-movie", movie.id, index)}
+              className="relative"
+            >
+              <MovieCard movie={movie} index={index} />
+            </motion.div>
+          ))}
       </motion.div>
 
       {/* Pagination */}

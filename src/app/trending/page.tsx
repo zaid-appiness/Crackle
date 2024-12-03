@@ -7,9 +7,16 @@ import MovieCard from "@/components/MovieCard";
 import Loading from "@/components/Loading";
 import { generateId } from "@/utils/generateId";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import MovieFilters, { FilterState } from "@/components/MovieFilters";
 
 export default function TrendingPage() {
   const router = useRouter();
+  const [filters, setFilters] = useState<FilterState>({
+    rating: 0,
+    genre: null,
+  });
+
   const { data, isLoading } = useQuery({
     queryKey: ["movies", "trending"],
     queryFn: () => movieApi.getTrendingMovies(),
@@ -28,13 +35,19 @@ export default function TrendingPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-4xl font-bold text-white mb-8"
-      >
-        Trending Now
-      </motion.h1>
+      <div className="flex justify-between items-center mb-8">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-bold text-white"
+        >
+          Trending Now
+        </motion.h1>
+        <MovieFilters
+          onFilterChange={setFilters}
+          onReset={() => setFilters({ rating: 0, genre: null })}
+        />
+      </div>
 
       <motion.div
         className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
@@ -49,15 +62,22 @@ export default function TrendingPage() {
         initial="hidden"
         animate="show"
       >
-        {data?.results.map((movie, index) => (
-          <motion.div
-            key={generateId("trending-movie", movie.id, index)}
-            className="relative"
-            data-movie-id={movie.id}
-          >
-            <MovieCard movie={movie} index={index} />
-          </motion.div>
-        ))}
+        {data?.results
+          .filter((movie) => {
+            const passesRating = movie.vote_average >= filters.rating;
+            const passesGenre =
+              !filters.genre || movie.genre_ids.includes(filters.genre);
+            return passesRating && passesGenre;
+          })
+          .map((movie, index) => (
+            <motion.div
+              key={generateId("trending-movie", movie.id, index)}
+              className="relative"
+              data-movie-id={movie.id}
+            >
+              <MovieCard movie={movie} index={index} />
+            </motion.div>
+          ))}
       </motion.div>
     </div>
   );
