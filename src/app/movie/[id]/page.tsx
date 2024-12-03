@@ -7,26 +7,26 @@ import Image from "next/image";
 import { FaStar, FaClock, FaCalendar, FaPlay, FaImdb } from "react-icons/fa";
 import Loading from "@/components/Loading";
 import MovieCard from "@/components/MovieCard";
+import { useParams } from "next/navigation";
 
-export default function MovieDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function MovieDetailPage() {
+  const params = useParams();
+  const movieId = Number(params.id);
+
   const { data: movie, isLoading: isLoadingMovie } = useQuery({
-    queryKey: ["movie", params.id],
-    queryFn: () => movieApi.getMovieDetails(Number(params.id)),
+    queryKey: ["movie", movieId],
+    queryFn: () => movieApi.getMovieDetails(movieId),
   });
 
   const { data: similarMovies } = useQuery({
-    queryKey: ["similar", params.id],
-    queryFn: () => movieApi.getSimilarMovies(Number(params.id)),
+    queryKey: ["similar", movieId],
+    queryFn: () => movieApi.getSimilarMovies(movieId),
     enabled: !!movie,
   });
 
   const { data: videoData } = useQuery({
-    queryKey: ["video", params.id],
-    queryFn: () => movieApi.getMovieVideos(Number(params.id)),
+    queryKey: ["video", movieId],
+    queryFn: () => movieApi.getMovieVideos(movieId),
     enabled: !!movie,
   });
 
@@ -107,16 +107,18 @@ export default function MovieDetailPage({
                     Watch Trailer
                   </a>
                 )}
-                <a
-                  href={`https://www.imdb.com/title/${movie.imdb_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-black rounded-lg 
-                  hover:bg-yellow-400 transition-colors"
-                >
-                  <FaImdb className="text-xl" />
-                  IMDb
-                </a>
+                {"imdb_id" in movie && (
+                  <a
+                    href={`https://www.imdb.com/title/${movie.imdb_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-black rounded-lg 
+                    hover:bg-yellow-400 transition-colors"
+                  >
+                    <FaImdb className="text-xl" />
+                    IMDb
+                  </a>
+                )}
               </div>
             </motion.div>
           </div>
