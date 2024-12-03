@@ -9,6 +9,7 @@ import { generateId } from "@/utils/generateId";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
+import NoResults from "@/components/NoResults";
 
 export default function TrendingPage() {
   const router = useRouter();
@@ -20,6 +21,13 @@ export default function TrendingPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["movies", "trending"],
     queryFn: () => movieApi.getTrendingMovies(),
+  });
+
+  const filteredMovies = data?.results.filter((movie) => {
+    const passesRating = movie.vote_average >= filters.rating;
+    const passesGenre =
+      !filters.genre || movie.genre_ids.includes(filters.genre);
+    return passesRating && passesGenre;
   });
 
   const handleContainerClick = (e: React.MouseEvent) => {
@@ -49,27 +57,23 @@ export default function TrendingPage() {
         />
       </div>
 
-      <motion.div
-        className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-        onClick={handleContainerClick}
-        variants={{
-          hidden: { opacity: 0 },
-          show: {
-            opacity: 1,
-            transition: { staggerChildren: 0.1 },
-          },
-        }}
-        initial="hidden"
-        animate="show"
-      >
-        {data?.results
-          .filter((movie) => {
-            const passesRating = movie.vote_average >= filters.rating;
-            const passesGenre =
-              !filters.genre || movie.genre_ids.includes(filters.genre);
-            return passesRating && passesGenre;
-          })
-          .map((movie, index) => (
+      {!filteredMovies?.length ? (
+        <NoResults />
+      ) : (
+        <motion.div
+          className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+          onClick={handleContainerClick}
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.1 },
+            },
+          }}
+          initial="hidden"
+          animate="show"
+        >
+          {filteredMovies.map((movie, index) => (
             <motion.div
               key={generateId("trending-movie", movie.id, index)}
               className="relative"
@@ -78,7 +82,8 @@ export default function TrendingPage() {
               <MovieCard movie={movie} index={index} />
             </motion.div>
           ))}
-      </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

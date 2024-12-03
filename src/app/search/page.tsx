@@ -2,16 +2,16 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { movieApi } from "@/lib/api";
 import MovieCard from "@/components/MovieCard";
-import Loading from "@/components/Loading";
 import { generateId } from "@/utils/generateId";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import { useState } from "react";
+import MovieGridSkeleton from "@/components/MovieGridSkeleton";
+import NoResults from "@/components/NoResults";
 
 export default function SearchPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const [filters, setFilters] = useState<FilterState>({
@@ -25,16 +25,14 @@ export default function SearchPage() {
     enabled: query.length > 0,
   });
 
-  const handleContainerClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const movieCard = target.closest("[data-movie-id]");
-    if (movieCard) {
-      const movieId = movieCard.getAttribute("data-movie-id");
-      router.push(`/movie/${movieId}`);
-    }
-  };
+  const filteredMovies = data?.results.filter((movie) => {
+    const passesRating = movie.vote_average >= filters.rating;
+    const passesGenre =
+      !filters.genre || movie.genre_ids.includes(filters.genre);
+    return passesRating && passesGenre;
+  });
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return <MovieGridSkeleton />;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -52,18 +50,16 @@ export default function SearchPage() {
         />
       </div>
 
-      {data?.results.length === 0 ? (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-gray-400 text-xl text-center my-12"
-        >
-          No results found for &quot;{query}&quot;
-        </motion.p>
+      {!data?.results.length ? (
+        <NoResults
+          message="No movies found"
+          subMessage={`No results found for "${query}". Try a different search term.`}
+        />
+      ) : !filteredMovies?.length ? (
+        <NoResults />
       ) : (
         <motion.div
           className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-          onClick={handleContainerClick}
           variants={{
             hidden: { opacity: 0 },
             show: {
@@ -74,22 +70,15 @@ export default function SearchPage() {
           initial="hidden"
           animate="show"
         >
-          {data?.results
-            .filter((movie) => {
-              const passesRating = movie.vote_average >= filters.rating;
-              const passesGenre =
-                !filters.genre || movie.genre_ids.includes(filters.genre);
-              return passesRating && passesGenre;
-            })
-            .map((movie, index) => (
-              <motion.div
-                key={generateId("search-movie", movie.id, index)}
-                className="relative"
-                data-movie-id={movie.id}
-              >
-                <MovieCard movie={movie} index={index} />
-              </motion.div>
-            ))}
+          {filteredMovies.map((movie, index) => (
+            <motion.div
+              key={generateId("search-movie", movie.id, index)}
+              className="relative"
+              data-movie-id={movie.id}
+            >
+              <MovieCard movie={movie} index={index} />
+            </motion.div>
+          ))}
         </motion.div>
       )}
     </div>

@@ -43,8 +43,10 @@ export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
   };
 
   const handleReset = () => {
-    setActiveFilters({ rating: 0, genre: null });
+    const resetFilters = { rating: 0, genre: null };
+    setActiveFilters(resetFilters);
     onReset();
+    setIsOpen(false);
   };
 
   return (

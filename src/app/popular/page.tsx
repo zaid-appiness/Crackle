@@ -21,6 +21,13 @@ export default function PopularPage() {
     queryFn: () => movieApi.getPopularMovies(page),
   });
 
+  const filteredMovies = data?.results.filter((movie) => {
+    const passesRating = movie.vote_average >= filters.rating;
+    const passesGenre =
+      !filters.genre || movie.genre_ids.includes(filters.genre);
+    return passesRating && passesGenre;
+  });
+
   if (isLoading) return <Loading />;
   if (error) throw error;
 
@@ -85,70 +92,82 @@ export default function PopularPage() {
         />
       </div>
 
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
-      >
-        {data?.results
-          .filter((movie) => {
-            const passesRating = movie.vote_average >= filters.rating;
-            const passesGenre =
-              !filters.genre || movie.genre_ids.includes(filters.genre);
-            return passesRating && passesGenre;
-          })
-          .map((movie, index) => (
-            <motion.div
-              key={generateId("popular-movie", movie.id, index)}
-              className="relative"
+      {!filteredMovies?.length ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center min-h-[50vh] space-y-4"
+        >
+          <p className="text-2xl text-gray-400">No movies match your filters</p>
+          <button
+            onClick={() => setFilters({ rating: 0, genre: null })}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 
+            transition-colors duration-200"
+          >
+            Reset Filters
+          </button>
+        </motion.div>
+      ) : (
+        <>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
+          >
+            {filteredMovies.map((movie, index) => (
+              <motion.div
+                key={generateId("popular-movie", movie.id, index)}
+                className="relative"
+              >
+                <MovieCard movie={movie} index={index} />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Pagination */}
+          <div className="flex justify-center items-center gap-2 py-8">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
+              disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
             >
-              <MovieCard movie={movie} index={index} />
-            </motion.div>
-          ))}
-      </motion.div>
+              Previous
+            </button>
 
-      {/* Pagination */}
-      <div className="flex justify-center items-center gap-2 py-8">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
-          disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-        >
-          Previous
-        </button>
-
-        <div className="flex items-center gap-2">
-          {getVisiblePages().map((pageNum, index) => (
-            <div key={index}>
-              {pageNum === "..." ? (
-                <span className="text-gray-400 px-2">{pageNum}</span>
-              ) : (
-                <button
-                  onClick={() => handlePageChange(Number(pageNum))}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    pageNum === currentPage
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-800 text-white hover:bg-gray-700"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              )}
+            <div className="flex items-center gap-2">
+              {getVisiblePages().map((pageNum, index) => (
+                <div key={index}>
+                  {pageNum === "..." ? (
+                    <span className="text-gray-400 px-2">{pageNum}</span>
+                  ) : (
+                    <button
+                      onClick={() => handlePageChange(Number(pageNum))}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        pageNum === currentPage
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-800 text-white hover:bg-gray-700"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
-          disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-        >
-          Next
-        </button>
-      </div>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
+              disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }

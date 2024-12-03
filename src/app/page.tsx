@@ -11,6 +11,7 @@ import { generateId } from "@/utils/generateId";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import { useRouter } from "next/navigation";
 import MovieGridSkeleton from "@/components/MovieGridSkeleton";
+import NoResults from "@/components/NoResults";
 
 export default function Home() {
   const [page, setPage] = useState(1);
@@ -27,6 +28,13 @@ export default function Home() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["movies", "popular", page],
     queryFn: () => movieApi.getPopularMovies(page),
+  });
+
+  const filteredMovies = data?.results.filter((movie) => {
+    const passesRating = movie.vote_average >= filters.rating;
+    const passesGenre =
+      !filters.genre || movie.genre_ids.includes(filters.genre);
+    return passesRating && passesGenre;
   });
 
   const router = useRouter();
@@ -75,32 +83,12 @@ export default function Home() {
     return rangeWithDots;
   };
 
-  const filteredMovies = data?.results.filter((movie) => {
-    const passesRating = movie.vote_average >= filters.rating;
-    const passesGenre =
-      !filters.genre || movie.genre_ids.includes(filters.genre);
-    return passesRating && passesGenre;
-  });
-
   const handleContainerClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-
-    // Handle movie card clicks
     const movieCard = target.closest("[data-movie-id]");
     if (movieCard) {
       const movieId = movieCard.getAttribute("data-movie-id");
       router.push(`/movie/${movieId}`);
-      return;
-    }
-
-    // Handle pagination clicks
-    const pageButton = target.closest("[data-page]");
-    if (pageButton) {
-      const page = pageButton.getAttribute("data-page");
-      if (page !== "...") {
-        handlePageChange(Number(page));
-      }
-      return;
     }
   };
 
@@ -128,76 +116,85 @@ export default function Home() {
           />
         </div>
 
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.1,
-              },
-            },
-          }}
-          initial="hidden"
-          animate="show"
-        >
-          <Suspense fallback={<Loading />}>
-            {filteredMovies?.map((movie, index) => (
-              <motion.div
-                key={generateId("home-movie", movie.id, index)}
-                className="relative"
-                data-movie-id={movie.id}
-              >
-                <MovieCard movie={movie} index={index} />
-              </motion.div>
-            ))}
-          </Suspense>
-        </motion.div>
-
-        {/* Pagination with data attributes */}
-        <div className="flex flex-wrap justify-center items-center gap-2 py-8">
-          <button
-            data-page={currentPage - 1}
-            disabled={currentPage === 1}
-            className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
-            disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-          >
-            Previous
-          </button>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {getVisiblePages().map((pageNum, index) => (
-              <div key={index}>
-                {pageNum === "..." ? (
-                  <span className="text-gray-400 px-2" data-page="...">
-                    {pageNum}
-                  </span>
-                ) : (
-                  <button
-                    data-page={pageNum}
-                    className={`px-3 md:px-4 py-2 text-sm rounded-lg transition-colors ${
-                      pageNum === currentPage
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-white hover:bg-gray-700"
-                    }`}
+        {!filteredMovies?.length ? (
+          <NoResults />
+        ) : (
+          <>
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1,
+                  },
+                },
+              }}
+              initial="hidden"
+              animate="show"
+            >
+              <Suspense fallback={<Loading />}>
+                {filteredMovies.map((movie, index) => (
+                  <motion.div
+                    key={generateId("home-movie", movie.id, index)}
+                    className="relative"
+                    data-movie-id={movie.id}
                   >
-                    {pageNum}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+                    <MovieCard movie={movie} index={index} />
+                  </motion.div>
+                ))}
+              </Suspense>
+            </motion.div>
 
-          <button
-            data-page={currentPage + 1}
-            disabled={currentPage === totalPages}
-            className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
-            disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-          >
-            Next
-          </button>
-        </div>
+            {/* Pagination */}
+            <div className="flex justify-center items-center gap-2 py-8">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                data-page={currentPage - 1}
+                disabled={currentPage === 1}
+                className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
+                disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
+              >
+                Previous
+              </button>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {getVisiblePages().map((pageNum, index) => (
+                  <div key={index}>
+                    {pageNum === "..." ? (
+                      <span className="text-gray-400 px-2" data-page="...">
+                        {pageNum}
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handlePageChange(Number(pageNum))}
+                        data-page={pageNum}
+                        className={`px-3 md:px-4 py-2 text-sm rounded-lg transition-colors ${
+                          pageNum === currentPage
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-800 text-white hover:bg-gray-700"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                data-page={currentPage + 1}
+                disabled={currentPage === totalPages}
+                className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
+                disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </motion.div>
   );
