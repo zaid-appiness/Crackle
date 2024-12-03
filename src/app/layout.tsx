@@ -5,6 +5,7 @@ import PageWrapper from "@/components/PageWrapper";
 import Providers from "@/components/Providers";
 import ScrollToTop from "@/components/ScrollToTop";
 import "./globals.css";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,7 +37,9 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-grow w-full">
             <div className="container mx-auto px-4 py-8">
-              <PageWrapper>{children}</PageWrapper>
+              <ErrorBoundary>
+                <PageWrapper>{children}</PageWrapper>
+              </ErrorBoundary>
             </div>
           </main>
           <ScrollToTop />

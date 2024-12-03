@@ -3,25 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "postinstall": "prisma generate",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.62.0",
-    "@tanstack/react-query-devtools": "^5.62.0",
-    "axios": "^1.6.2",
-    "clsx": "^2.0.0",
-    "critters": "^0.0.23",
-    "framer-motion": "^11.12.0",
-    "next": "15.0.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-icons": "^5.3.0",
-    "react-intersection-observer": "^9.13.1",
-    "sass": "^1.69.5",
-    "zustand": "^4.4.7"
+    "@tanstack/react-query": "latest",
+    "axios": "latest",
+    "framer-motion": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-icons": "latest",
+    "zustand": "latest"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

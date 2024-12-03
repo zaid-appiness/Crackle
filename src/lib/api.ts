@@ -13,8 +13,13 @@ const api = axios.create({
 
 export const movieApi = {
   getPopularMovies: async (page: number = 1) => {
-    const response = await api.get<MovieResponse>(`/movie/popular?page=${page}`);
-    return response.data;
+    try {
+      const response = await api.get<MovieResponse>(`/movie/popular?page=${page}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching popular movies:', error);
+      return { results: [], total_pages: 0, page: 1, total_results: 0 };
+    }
   },
 
   getTopRatedMovies: async () => {
