@@ -22,7 +22,7 @@ export default async function TopMoviesPage() {
               <div className="absolute -left-2 -top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white">
                 {index + 1}
               </div>
-              <MovieCard movie={movie} />
+              <MovieCard movie={movie} index={index} />
             </div>
           ))}
         </Suspense>

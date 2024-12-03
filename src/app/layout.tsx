@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
+import PageWrapper from "@/components/PageWrapper";
+import Providers from "@/components/Providers";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -28,11 +30,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-black w-full overflow-x-hidden`}
       >
-        <Navbar />
-        <SearchBar />
-        <main className="container mx-auto px-4 py-8">{children}</main>
+        <Providers>
+          <Navbar />
+          <SearchBar />
+          <main className="flex-grow w-full">
+            <div className="container mx-auto px-4 py-8">
+              <PageWrapper>{children}</PageWrapper>
+            </div>
+          </main>
+        </Providers>
       </body>
     </html>
   );

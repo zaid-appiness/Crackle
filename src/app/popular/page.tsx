@@ -6,40 +6,49 @@ import { movieApi } from "@/lib/api";
 import { Movie } from "@/types/movie";
 import MovieCard from "@/components/MovieCard";
 import Loading from "@/components/Loading";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { generateId } from "@/utils/generateId";
 
 export default function PopularPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadMore = () => setPage((prev) => prev + 1);
+  const loadMore = () => {
+    if (!loadingMore && hasMore) {
+      setPage((prev) => prev + 1);
+      setLoadingMore(true);
+    }
+  };
 
-  useInfiniteScroll(loadMore, hasMore, loading);
+  useInfiniteScroll(loadMore, hasMore, loadingMore);
 
   useEffect(() => {
     const fetchMovies = async () => {
-      setLoading(true);
       try {
         const data = await movieApi.getPopularMovies(page);
         if (page === 1) {
           setMovies(data.results);
+          setLoading(false);
         } else {
           setMovies((prev) => [...prev, ...data.results]);
+          setLoadingMore(false);
         }
         setHasMore(data.page < data.total_pages);
       } catch (error) {
         console.error("Error fetching popular movies:", error);
-      } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
 
     fetchMovies();
   }, [page]);
 
-  if (loading && page === 1) return <Loading />;
+  if (loading) return <Loading />;
 
   return (
     <motion.div
@@ -63,21 +72,15 @@ export default function PopularPage() {
       >
         {movies.map((movie, index) => (
           <motion.div
-            key={`${movie.id}-${index}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            key={generateId("popular-movie", movie.id, index)}
+            className="relative"
           >
-            <MovieCard movie={movie} />
+            <MovieCard movie={movie} index={index} />
           </motion.div>
         ))}
       </motion.div>
 
-      {loading && page > 1 && (
-        <div className="flex justify-center py-8">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
+      {loadingMore && <LoadingSpinner />}
     </motion.div>
   );
 }

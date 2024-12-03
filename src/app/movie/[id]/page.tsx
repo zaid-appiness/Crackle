@@ -14,6 +14,7 @@ export default function MoviePage() {
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -46,56 +47,72 @@ export default function MoviePage() {
       className="space-y-8"
     >
       <div className="relative h-[60vh] w-full">
-        <Image
-          src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-          alt={movie.title}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
-      </div>
-
-      <div className="container mx-auto px-4">
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: imageLoaded ? 1 : 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative h-full w-full"
         >
-          <h1 className="text-4xl font-bold text-white">{movie.title}</h1>
-          <div className="flex gap-4 text-gray-400">
-            <span>{new Date(movie.release_date).getFullYear()}</span>
-            <span>{movie.runtime} min</span>
-            <span>{movie.vote_average.toFixed(1)} ⭐</span>
-          </div>
-          <p className="text-gray-300 max-w-2xl">{movie.overview}</p>
+          <Image
+            src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
+            alt={movie.title}
+            fill
+            className="object-cover"
+            priority
+            onLoadingComplete={() => setImageLoaded(true)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        </motion.div>
 
-          {similarMovies.length > 0 && (
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold text-white mb-4">
-                Similar Movies
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {similarMovies.map((movie) => (
-                  <motion.div
-                    key={movie.id}
-                    whileHover={{ scale: 1.05 }}
-                    className="relative aspect-[2/3] cursor-pointer"
-                    onClick={() => router.push(`/movie/${movie.id}`)}
-                  >
-                    <Image
-                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                      alt={movie.title}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </motion.div>
-                ))}
-              </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="absolute bottom-0 left-0 p-8 z-10 w-full"
+        >
+          <div className="container mx-auto">
+            <h1 className="text-4xl font-bold text-white mb-4">
+              {movie.title}
+            </h1>
+            <div className="flex gap-4 text-gray-300 mb-4">
+              <span>{new Date(movie.release_date).getFullYear()}</span>
+              <span>{movie.runtime} min</span>
+              <span>{movie.vote_average.toFixed(1)} ⭐</span>
             </div>
-          )}
+            <p className="text-gray-200 max-w-2xl text-lg">{movie.overview}</p>
+          </div>
         </motion.div>
       </div>
+
+      {similarMovies.length > 0 && (
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-6"
+          >
+            <h2 className="text-2xl font-bold text-white">Similar Movies</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {similarMovies.map((movie) => (
+                <motion.div
+                  key={movie.id}
+                  whileHover={{ scale: 1.05 }}
+                  className="relative aspect-[2/3] cursor-pointer"
+                  onClick={() => router.push(`/movie/${movie.id}`)}
+                >
+                  <Image
+                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                    alt={movie.title}
+                    fill
+                    className="object-cover rounded-lg"
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }

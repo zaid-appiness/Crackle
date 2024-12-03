@@ -7,6 +7,7 @@ import { Movie } from "@/types/movie";
 import MovieCard from "@/components/MovieCard";
 import Loading from "@/components/Loading";
 import Hero from "@/components/Hero";
+import { generateId } from "@/utils/generateId";
 
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -63,8 +64,13 @@ export default function Home() {
           animate="show"
         >
           <Suspense fallback={<Loading />}>
-            {movies?.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+            {movies?.map((movie, index) => (
+              <motion.div
+                key={generateId("home-movie", movie.id, index)}
+                className="relative"
+              >
+                <MovieCard movie={movie} index={index} />
+              </motion.div>
             ))}
           </Suspense>
         </motion.div>
