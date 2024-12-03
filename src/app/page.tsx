@@ -10,6 +10,7 @@ import Hero from "@/components/Hero";
 import { generateId } from "@/utils/generateId";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import { useRouter } from "next/navigation";
+import MovieGridSkeleton from "@/components/MovieGridSkeleton";
 
 export default function Home() {
   const [page, setPage] = useState(1);
@@ -30,7 +31,7 @@ export default function Home() {
 
   const router = useRouter();
 
-  if (isLoading || !trendingData) return <Loading />;
+  if (isLoading || !trendingData) return <MovieGridSkeleton />;
   if (error) throw error;
 
   const totalPages = Math.min(data?.total_pages ?? 0, 500);
@@ -128,7 +129,7 @@ export default function Home() {
         </div>
 
         <motion.div
-          className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
           variants={{
             hidden: { opacity: 0 },
             show: {
@@ -155,17 +156,17 @@ export default function Home() {
         </motion.div>
 
         {/* Pagination with data attributes */}
-        <div className="flex justify-center items-center gap-2 py-8">
+        <div className="flex flex-wrap justify-center items-center gap-2 py-8">
           <button
             data-page={currentPage - 1}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
+            className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
             disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
           >
             Previous
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {getVisiblePages().map((pageNum, index) => (
               <div key={index}>
                 {pageNum === "..." ? (
@@ -175,7 +176,7 @@ export default function Home() {
                 ) : (
                   <button
                     data-page={pageNum}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    className={`px-3 md:px-4 py-2 text-sm rounded-lg transition-colors ${
                       pageNum === currentPage
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-white hover:bg-gray-700"
@@ -191,7 +192,7 @@ export default function Home() {
           <button
             data-page={currentPage + 1}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 
+            className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
             disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
           >
             Next

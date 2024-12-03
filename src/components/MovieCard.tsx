@@ -18,8 +18,9 @@ export default function MovieCard({ movie }: MovieCardProps) {
 
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="relative aspect-[2/3] rounded-lg overflow-hidden cursor-pointer group"
+      whileHover={{ scale: 1.02 }}
+      className="relative aspect-[2/3] rounded-lg overflow-hidden cursor-pointer group
+      transform transition-transform duration-200 hover:z-10"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >

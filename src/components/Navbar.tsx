@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaSearch, FaTimes } from "react-icons/fa";
+import { FaSearch, FaTimes, FaBars } from "react-icons/fa";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -17,6 +17,13 @@ export default function Navbar() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsSearchOpen(false);
+  }, [pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,14 +41,14 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 
+            className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 
             bg-clip-text text-transparent hover:from-blue-400 hover:to-purple-500 
             transition-all duration-300"
           >
             MovieApp
           </Link>
 
-          {/* Navigation Links */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             {navItems.map(({ href, label }) => (
               <Link
@@ -57,36 +64,32 @@ export default function Navbar() {
                     layoutId="navbar-indicator"
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"
                     initial={false}
-                    transition={{
-                      type: "spring",
-                      stiffness: 380,
-                      damping: 30,
-                    }}
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
               </Link>
             ))}
           </div>
 
-          {/* Search Bar */}
-          <div className="flex items-center gap-4">
+          {/* Search and Mobile Menu */}
+          <div className="flex items-center gap-2">
             <AnimatePresence>
               {isSearchOpen && (
                 <motion.form
                   initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "300px", opacity: 1 }}
+                  animate={{ width: "auto", opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}
-                  className="relative"
+                  className="relative max-w-[200px] md:max-w-[300px]"
                   onSubmit={handleSearch}
                 >
                   <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search movies..."
+                    placeholder="Search..."
                     className="w-full px-4 py-1.5 pl-10 bg-gray-800/50 text-white rounded-full
                     border border-gray-700 focus:outline-none focus:border-blue-500
-                    focus:ring-1 focus:ring-blue-500 transition-all"
+                    focus:ring-1 focus:ring-blue-500 transition-all text-sm"
                     autoFocus
                   />
                   <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -94,32 +97,52 @@ export default function Navbar() {
               )}
             </AnimatePresence>
 
-            {/* Search Toggle Button */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               className="p-2 text-gray-300 hover:text-white transition-colors"
+              aria-label="Toggle search"
             >
               {isSearchOpen ? <FaTimes size={18} /> : <FaSearch size={18} />}
             </button>
 
-            {/* Mobile Menu Button */}
-            <button className="md:hidden p-2 text-gray-300 hover:text-white">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-gray-300 hover:text-white transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className="py-2 space-y-1">
+                {navItems.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`block px-4 py-2 text-sm rounded-md transition-colors
+                    ${
+                      pathname === href
+                        ? "bg-gray-800 text-white"
+                        : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

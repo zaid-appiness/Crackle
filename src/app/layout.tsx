@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import Navbar from "@/components/Navbar";
 import PageWrapper from "@/components/PageWrapper";
 import Providers from "@/components/Providers";
+import ScrollToTop from "@/components/ScrollToTop";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -38,6 +39,7 @@ export default function RootLayout({
               <PageWrapper>{children}</PageWrapper>
             </div>
           </main>
+          <ScrollToTop />
         </Providers>
       </body>
     </html>
