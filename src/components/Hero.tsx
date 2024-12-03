@@ -13,8 +13,9 @@ import {
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ReactPlayer from "react-player";
+import { useScroll, useTransform, useAnimation } from "framer-motion";
 
 interface HeroProps {
   movie: Movie;
@@ -25,23 +26,57 @@ export default function Hero({ movie }: HeroProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const playerRef = useRef<ReactPlayer>(null);
+  const { scrollY } = useScroll();
+  const controls = useAnimation();
 
   const { data: videoSource } = useQuery({
     queryKey: ["movie-stream", movie.id],
     queryFn: () => movieApi.getMovieStream(movie.id),
   });
 
+  // Adjust parallax effects
+  const opacity = useTransform(scrollY, [0, 500], [1, 0.3]);
+  const titleY = useTransform(scrollY, [0, 300], [0, 30]);
+
+  // Add floating animation
+  useEffect(() => {
+    controls.start({
+      y: [0, -20, 0],
+      transition: {
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    });
+  }, [controls]);
+
   return (
     <div className="relative h-[85vh] w-full overflow-hidden">
       <AnimatePresence mode="wait">
         {!isPlaying ? (
-          // Backdrop Image
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{
+              opacity: 1,
+              y: [-20, 0, -20],
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              y: {
+                duration: 20,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+              scale: {
+                duration: 25,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+            }}
             exit={{ opacity: 0 }}
             className="absolute inset-0"
+            style={{ opacity }}
           >
             <Image
               src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
@@ -50,8 +85,14 @@ export default function Hero({ movie }: HeroProps) {
               priority
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent"
+              style={{ opacity }}
+            />
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"
+              style={{ opacity }}
+            />
           </motion.div>
         ) : (
           // Video Player
@@ -93,22 +134,29 @@ export default function Hero({ movie }: HeroProps) {
       </AnimatePresence>
 
       {/* Content */}
-      <div className="relative h-full container mx-auto px-4 flex items-center">
+      <motion.div
+        className="relative h-full container mx-auto px-4 flex items-center"
+        animate={controls}
+      >
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
           className="max-w-2xl space-y-6"
+          style={{ y: titleY }}
         >
           {/* Title with Animated Gradient */}
-          <h1 className="text-5xl md:text-6xl font-bold">
+          <motion.h1
+            className="text-5xl md:text-6xl font-bold"
+            style={{ y: titleY }}
+          >
             <span
               className="bg-gradient-to-r from-white via-white to-transparent 
-            bg-clip-text text-transparent animate-gradient"
+              bg-clip-text text-transparent animate-gradient"
             >
               {movie.title}
             </span>
-          </h1>
+          </motion.h1>
 
           {/* Rating Badge */}
           <div className="flex items-center gap-4">
@@ -195,16 +243,31 @@ export default function Hero({ movie }: HeroProps) {
           </div>
         </motion.div>
 
-        {/* Floating Poster */}
+        {/* Floating Poster with enhanced parallax */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: 1,
+            y: [-10, 10, -10],
+            rotate: [-3, 3, -3],
+          }}
+          transition={{
+            y: {
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            },
+            rotate: {
+              duration: 12,
+              repeat: Infinity,
+              ease: "easeInOut",
+            },
+          }}
           className="hidden lg:block absolute right-12 bottom-[-10%] w-64 aspect-[2/3]"
         >
           <div
             className="relative w-full h-full rounded-lg overflow-hidden shadow-2xl 
-          transform -rotate-6 hover:rotate-0 transition-transform duration-300"
+            hover:rotate-0 transition-transform duration-300"
           >
             <Image
               src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
@@ -214,7 +277,7 @@ export default function Hero({ movie }: HeroProps) {
             />
           </div>
         </motion.div>
-      </div>
+      </motion.div>
     </div>
   );
 }
