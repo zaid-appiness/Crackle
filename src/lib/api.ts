@@ -4,6 +4,11 @@ import { MovieResponse, MovieDetails } from '@/types/movie';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const VIDSRC_BASE_URL = 'https://vidsrc.xyz/embed/movie';
 
+// Log the API key in development (remove in production)
+if (process.env.NODE_ENV === 'development') {
+  console.log('API Key:', process.env.NEXT_PUBLIC_API_KEY);
+}
+
 const api = axios.create({
   baseURL: BASE_URL,
   params: { 
@@ -15,11 +20,34 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// Add request interceptor to log requests in development
+api.interceptors.request.use(
+  (config) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Request:', config.url, config.params);
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Improve error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('API Error:', {
+        status: error.response?.status,
+        message: error.message,
+        url: error.config?.url,
+        params: error.config?.params
+      });
+    }
+
     if (error.response?.status === 401) {
-      console.error('API Key error:', error);
+      console.error('API Key error - please check your .env file');
       return Promise.resolve({ 
         data: { results: [], total_pages: 0, page: 1, total_results: 0 } 
       });
