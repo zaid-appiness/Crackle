@@ -7,7 +7,7 @@ const VIDSRC_BASE_URL = 'https://vidsrc.xyz/embed/movie';
 const api = axios.create({
   baseURL: BASE_URL,
   params: { 
-    api_key: process.env.NEXT_PUBLIC_API_KEY || ''
+    api_key: process.env.NEXT_PUBLIC_API_KEY
   },
   headers: {
     'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
