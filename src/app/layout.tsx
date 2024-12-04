@@ -31,6 +31,14 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <title>Crackle - Watch Movies Online</title>
+        <meta
+          name="description"
+          content="Watch your favorite movies online with Crackle. Stream the latest releases, popular movies, and classic films."
+        />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body
         className={`${inter.className} bg-background text-white min-h-screen`}
       >
