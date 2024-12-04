@@ -2,23 +2,18 @@
 
 import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { movieApi } from "@/lib/api";
-import MovieFilters, { FilterState } from "@/components/MovieFilters";
-import { useState } from "react";
-import MovieGridSkeleton from "@/components/MovieGridSkeleton";
-import NoResults from "@/components/NoResults";
+import Loading from "@/components/Loading";
 import MovieGrid from "@/components/MovieGrid";
-import { Movie } from "@/types/movie";
+import NoResults from "@/components/NoResults";
+import PageHeader from "@/components/PageHeader";
+import { useMovieList } from "@/hooks/useMovieList";
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
-  const [filters, setFilters] = useState<FilterState>({
-    rating: 0,
-    genre: null,
-  });
+  const { setFilters, filterMovies } = useMovieList();
 
   const { data, isLoading } = useQuery({
     queryKey: ["search", query],
@@ -26,30 +21,18 @@ function SearchPageContent() {
     enabled: query.length > 0,
   });
 
-  const filteredMovies = data?.results.filter((movie: Movie) => {
-    const passesRating = movie.vote_average >= filters.rating;
-    const passesGenre =
-      !filters.genre || movie.genre_ids.includes(filters.genre);
-    return passesRating && passesGenre;
-  });
+  const filteredMovies = data?.results ? filterMovies(data.results) : [];
 
-  if (isLoading) return <MovieGridSkeleton />;
+  if (isLoading) return <Loading />;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold text-white"
-        >
-          Search Results for &quot;{query}&quot;
-        </motion.h1>
-        <MovieFilters
-          onFilterChange={setFilters}
-          onReset={() => setFilters({ rating: 0, genre: null })}
-        />
-      </div>
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      <PageHeader
+        title={`Search Results for "${query}"`}
+        subtitle={`Found ${filteredMovies.length} movies`}
+        onFilterChange={setFilters}
+        onFilterReset={() => setFilters({ rating: 0, genre: null })}
+      />
 
       {!filteredMovies?.length ? (
         <NoResults
@@ -65,7 +48,7 @@ function SearchPageContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<MovieGridSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <SearchPageContent />
     </Suspense>
   );
