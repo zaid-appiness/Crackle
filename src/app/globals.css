@@ -95,3 +95,45 @@ body {
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Add these styles */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Hide scrollbar when not scrolling */
+:root {
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-y: overlay;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Fix similar movies overflow */
+.similar-movies-container {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  mask-image: linear-gradient(to right, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+}

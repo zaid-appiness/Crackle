@@ -9,10 +9,11 @@ import Loading from "@/components/Loading";
 import Hero from "@/components/Hero";
 import { generateId } from "@/utils/generateId";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
-import { useRouter } from "next/navigation";
 import MovieGridSkeleton from "@/components/MovieGridSkeleton";
 import NoResults from "@/components/NoResults";
 import HeroSkeleton from "@/components/HeroSkeleton";
+import { Movie } from "@/types/movie";
+import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default function Home() {
   const [page, setPage] = useState(1);
@@ -31,14 +32,12 @@ export default function Home() {
     queryFn: () => movieApi.getPopularMovies(page),
   });
 
-  const filteredMovies = data?.results.filter((movie) => {
+  const filteredMovies = data?.results.filter((movie: Movie) => {
     const passesRating = movie.vote_average >= filters.rating;
     const passesGenre =
       !filters.genre || movie.genre_ids.includes(filters.genre);
     return passesRating && passesGenre;
   });
-
-  const router = useRouter();
 
   if (isLoading || !trendingData)
     return (
@@ -92,118 +91,186 @@ export default function Home() {
     return rangeWithDots;
   };
 
-  const handleContainerClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const movieCard = target.closest("[data-movie-id]");
-    if (movieCard) {
-      const movieId = movieCard.getAttribute("data-movie-id");
-      router.push(`/movie/${movieId}`);
-    }
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-12"
-      onClick={handleContainerClick}
+      className="space-y-16"
     >
+      {/* Hero Section */}
       <Hero movie={trendingData.results[0]} />
 
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 space-y-16">
+        {/* Stats Section */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Movies", value: "10,000+" },
+            { label: "Genres", value: "20+" },
+            { label: "Languages", value: "50+" },
+            { label: "New Weekly", value: "100+" },
+          ].map(({ label, value }) => (
+            <motion.div
+              key={label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 text-center border border-gray-700/50"
+            >
+              <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                <AnimatedCounter value={value} />
+              </h3>
+              <p className="text-gray-400 mt-2">{label}</p>
+            </motion.div>
+          ))}
+        </section>
+
+        {/* Popular Movies Section */}
+        <section>
+          <div className="flex justify-between items-center mb-8">
+            <div className="space-y-2">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl font-bold text-white"
+              >
+                Popular Movies
+              </motion.h2>
+              <p className="text-gray-400">Most watched movies this week</p>
+            </div>
+            <MovieFilters
+              onFilterChange={setFilters}
+              onReset={() => setFilters({ rating: 0, genre: null })}
+            />
+          </div>
+
+          {!filteredMovies?.length ? (
+            <NoResults />
+          ) : (
+            <>
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+                variants={{
+                  hidden: { opacity: 0 },
+                  show: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.1,
+                    },
+                  },
+                }}
+                initial="hidden"
+                animate="show"
+              >
+                <Suspense fallback={<Loading />}>
+                  {filteredMovies.map((movie: Movie, index: number) => (
+                    <motion.div
+                      key={generateId("home-movie", movie.id, index)}
+                      className="relative"
+                      data-movie-id={movie.id}
+                    >
+                      <MovieCard movie={movie} index={index} />
+                    </motion.div>
+                  ))}
+                </Suspense>
+              </motion.div>
+
+              {/* Pagination */}
+              <div className="flex justify-center items-center gap-2 py-8">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  data-page={currentPage - 1}
+                  disabled={currentPage === 1}
+                  className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
+                  disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
+                >
+                  Previous
+                </button>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {getVisiblePages().map((pageNum, index) => (
+                    <div key={index}>
+                      {pageNum === "..." ? (
+                        <span className="text-gray-400 px-2" data-page="...">
+                          {pageNum}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handlePageChange(Number(pageNum))}
+                          data-page={pageNum}
+                          className={`px-3 md:px-4 py-2 text-sm rounded-lg transition-colors ${
+                            pageNum === currentPage
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-800 text-white hover:bg-gray-700"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  data-page={currentPage + 1}
+                  disabled={currentPage === totalPages}
+                  className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
+                  disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* Features Section */}
+        <section className="py-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold text-white"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl font-bold text-white text-center mb-12"
           >
-            Popular Movies
+            Why Choose Us
           </motion.h2>
-          <MovieFilters
-            onFilterChange={setFilters}
-            onReset={() => setFilters({ rating: 0, genre: null })}
-          />
-        </div>
-
-        {!filteredMovies?.length ? (
-          <NoResults />
-        ) : (
-          <>
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-              variants={{
-                hidden: { opacity: 0 },
-                show: {
-                  opacity: 1,
-                  transition: {
-                    staggerChildren: 0.1,
-                  },
-                },
-              }}
-              initial="hidden"
-              animate="show"
-            >
-              <Suspense fallback={<Loading />}>
-                {filteredMovies.map((movie, index) => (
-                  <motion.div
-                    key={generateId("home-movie", movie.id, index)}
-                    className="relative"
-                    data-movie-id={movie.id}
-                  >
-                    <MovieCard movie={movie} index={index} />
-                  </motion.div>
-                ))}
-              </Suspense>
-            </motion.div>
-
-            {/* Pagination */}
-            <div className="flex justify-center items-center gap-2 py-8">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                data-page={currentPage - 1}
-                disabled={currentPage === 1}
-                className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
-                disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "HD Quality",
+                description: "Watch all movies in high definition quality",
+                icon: "🎥",
+              },
+              {
+                title: "Regular Updates",
+                description: "New movies added every week",
+                icon: "🔄",
+              },
+              {
+                title: "Watch Anywhere",
+                description: "Available on all your devices",
+                icon: "📱",
+              },
+            ].map(({ title, description, icon }) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/30
+                hover:bg-gray-800/50 transition-colors duration-300"
               >
-                Previous
-              </button>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {getVisiblePages().map((pageNum, index) => (
-                  <div key={index}>
-                    {pageNum === "..." ? (
-                      <span className="text-gray-400 px-2" data-page="...">
-                        {pageNum}
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handlePageChange(Number(pageNum))}
-                        data-page={pageNum}
-                        className={`px-3 md:px-4 py-2 text-sm rounded-lg transition-colors ${
-                          pageNum === currentPage
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                data-page={currentPage + 1}
-                disabled={currentPage === totalPages}
-                className="px-3 md:px-4 py-2 bg-gray-800 text-white text-sm rounded-lg disabled:opacity-50 
-                disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          </>
-        )}
+                <div className="text-4xl mb-4">{icon}</div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  {title}
+                </h3>
+                <p className="text-gray-400">{description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
       </div>
     </motion.div>
   );

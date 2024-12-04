@@ -93,8 +93,8 @@ export default function MovieCard({ movie }: MovieCardProps) {
                   <h4 className="text-sm font-medium text-gray-400">
                     Similar Movies
                   </h4>
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                    {similarMovies.results.slice(0, 3).map((similar) => (
+                  <div className="similar-movies-container flex gap-2 pb-2">
+                    {similarMovies.results.slice(0, 3).map((similar: Movie) => (
                       <div
                         key={similar.id}
                         className="flex-shrink-0 w-16 h-24 relative rounded overflow-hidden 
