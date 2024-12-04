@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FaBug, FaRedo } from "react-icons/fa";
+import { FaBug, FaRedo, FaWifi } from "react-icons/fa";
+import { useEffect, useState } from "react";
 
 export default function Error({
   error,
@@ -9,6 +10,24 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      window.location.reload();
+    };
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-black">
       <motion.div
@@ -28,15 +47,17 @@ export default function Error({
           }}
           className="inline-block text-red-500 text-6xl"
         >
-          <FaBug />
+          {isOffline ? <FaWifi /> : <FaBug />}
         </motion.div>
 
         <h2 className="text-3xl font-bold text-white">
-          Oops! Something went wrong
+          {isOffline ? "You're Offline" : "Oops! Something went wrong"}
         </h2>
         <p className="text-gray-400">
-          {error.message ||
-            "Don't worry, we're on it. Try refreshing the page."}
+          {isOffline
+            ? "Please check your internet connection. We'll automatically reload when you're back online."
+            : error.message ||
+              "Don't worry, we're on it. Try refreshing the page."}
         </p>
 
         <motion.button
