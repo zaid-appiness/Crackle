@@ -13,9 +13,9 @@ import {
   FaVolumeMute,
 } from "react-icons/fa";
 import Loading from "@/components/Loading";
-import MovieCard from "@/components/MovieCard";
 import { useParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import MovieGrid from "@/components/MovieGrid";
 
 export default function MovieDetailPage() {
   const params = useParams();
@@ -197,23 +197,11 @@ export default function MovieDetailPage() {
       {/* Similar Movies Section */}
       {similarMovies && similarMovies.results.length > 0 && (
         <div className="container mx-auto px-4 py-12">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-2xl font-bold text-white mb-6"
-          >
-            Similar Movies
-          </motion.h2>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
-          >
-            {similarMovies.results.slice(0, 10).map((movie, index) => (
-              <MovieCard key={movie.id} movie={movie} index={index} />
-            ))}
-          </motion.div>
+          <h2 className="text-2xl font-bold text-white mb-6">Similar Movies</h2>
+          <MovieGrid
+            movies={similarMovies.results.slice(0, 10)}
+            prefix="similar"
+          />
         </div>
       )}
     </div>

@@ -3,19 +3,16 @@
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
-import MovieCard from "@/components/MovieCard";
 import Loading from "@/components/Loading";
-import { generateId } from "@/utils/generateId";
 import { useState } from "react";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
-import { useRouter } from "next/navigation";
 import NoResults from "@/components/NoResults";
 import { Movie } from "@/types/movie";
+import MovieGrid from "@/components/MovieGrid";
 
 export const dynamic = "force-dynamic";
 
 export default function TopRatedPage() {
-  const router = useRouter();
   const [filters, setFilters] = useState<FilterState>({
     rating: 0,
     genre: null,
@@ -32,15 +29,6 @@ export default function TopRatedPage() {
       !filters.genre || movie.genre_ids.includes(filters.genre);
     return passesRating && passesGenre;
   });
-
-  const handleContainerClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const movieCard = target.closest("[data-movie-id]");
-    if (movieCard) {
-      const movieId = movieCard.getAttribute("data-movie-id");
-      router.push(`/movie/${movieId}`);
-    }
-  };
 
   if (isLoading) return <Loading />;
 
@@ -63,39 +51,7 @@ export default function TopRatedPage() {
       {!filteredMovies?.length ? (
         <NoResults />
       ) : (
-        <motion.div
-          className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-          onClick={handleContainerClick}
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: { staggerChildren: 0.1 },
-            },
-          }}
-          initial="hidden"
-          animate="show"
-        >
-          {filteredMovies.map((movie: Movie, index: number) => (
-            <motion.div
-              key={generateId("top-movie", movie.id, index)}
-              className="relative"
-              data-movie-id={movie.id}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                show: { opacity: 1, y: 0 },
-              }}
-            >
-              <div
-                className="absolute -left-4 -top-4 w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 
-              rounded-full flex items-center justify-center z-10 shadow-lg border-2 border-white/10"
-              >
-                <span className="text-white font-bold">{index + 1}</span>
-              </div>
-              <MovieCard movie={movie} index={index} />
-            </motion.div>
-          ))}
-        </motion.div>
+        <MovieGrid movies={filteredMovies} prefix="top-rated" />
       )}
     </div>
   );

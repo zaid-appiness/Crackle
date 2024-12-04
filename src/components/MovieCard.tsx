@@ -8,7 +8,6 @@ import MovieCardSkeleton from "./MovieCardSkeleton";
 import { FaStar, FaCalendar, FaPlayCircle } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
-import { useRouter } from "next/navigation";
 
 interface MovieCardProps {
   movie: Movie;
@@ -16,7 +15,6 @@ interface MovieCardProps {
 }
 
 export default function MovieCard({ movie }: MovieCardProps) {
-  const router = useRouter();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -27,17 +25,12 @@ export default function MovieCard({ movie }: MovieCardProps) {
     staleTime: 1000 * 60 * 5,
   });
 
-  const handleMovieClick = (movieId: number) => {
-    router.push(`/movie/${movieId}`);
-  };
-
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
       className="relative aspect-[2/3] rounded-lg overflow-hidden cursor-pointer group"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      onClick={() => handleMovieClick(movie.id)}
     >
       {!imageLoaded && <MovieCardSkeleton />}
       <motion.div
@@ -101,7 +94,6 @@ export default function MovieCard({ movie }: MovieCardProps) {
                         transform transition-transform hover:scale-105"
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent triggering parent's onClick
-                          handleMovieClick(similar.id);
                         }}
                       >
                         <Image

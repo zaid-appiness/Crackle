@@ -1,19 +1,17 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
-import MovieCard from "@/components/MovieCard";
-import Loading from "@/components/Loading";
 import Hero from "@/components/Hero";
-import { generateId } from "@/utils/generateId";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import MovieGridSkeleton from "@/components/MovieGridSkeleton";
 import NoResults from "@/components/NoResults";
 import HeroSkeleton from "@/components/HeroSkeleton";
 import { Movie } from "@/types/movie";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import MovieGrid from "@/components/MovieGrid";
 
 export default function Home() {
   const [page, setPage] = useState(1);
@@ -149,32 +147,7 @@ export default function Home() {
             <NoResults />
           ) : (
             <>
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-                variants={{
-                  hidden: { opacity: 0 },
-                  show: {
-                    opacity: 1,
-                    transition: {
-                      staggerChildren: 0.1,
-                    },
-                  },
-                }}
-                initial="hidden"
-                animate="show"
-              >
-                <Suspense fallback={<Loading />}>
-                  {filteredMovies.map((movie: Movie, index: number) => (
-                    <motion.div
-                      key={generateId("home-movie", movie.id, index)}
-                      className="relative"
-                      data-movie-id={movie.id}
-                    >
-                      <MovieCard movie={movie} index={index} />
-                    </motion.div>
-                  ))}
-                </Suspense>
-              </motion.div>
+              <MovieGrid movies={filteredMovies} prefix="home" />
 
               {/* Pagination */}
               <div className="flex justify-center items-center gap-2 py-8">

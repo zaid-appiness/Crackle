@@ -4,12 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { movieApi } from "@/lib/api";
-import MovieCard from "@/components/MovieCard";
-import { generateId } from "@/utils/generateId";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import { useState } from "react";
 import MovieGridSkeleton from "@/components/MovieGridSkeleton";
 import NoResults from "@/components/NoResults";
+import MovieGrid from "@/components/MovieGrid";
+import { Movie } from "@/types/movie";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -25,7 +25,7 @@ export default function SearchPage() {
     enabled: query.length > 0,
   });
 
-  const filteredMovies = data?.results.filter((movie) => {
+  const filteredMovies = data?.results.filter((movie: Movie) => {
     const passesRating = movie.vote_average >= filters.rating;
     const passesGenre =
       !filters.genre || movie.genre_ids.includes(filters.genre);
@@ -50,36 +50,13 @@ export default function SearchPage() {
         />
       </div>
 
-      {!data?.results.length ? (
+      {!filteredMovies?.length ? (
         <NoResults
           message="No movies found"
           subMessage={`No results found for "${query}". Try a different search term.`}
         />
-      ) : !filteredMovies?.length ? (
-        <NoResults />
       ) : (
-        <motion.div
-          className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: { staggerChildren: 0.1 },
-            },
-          }}
-          initial="hidden"
-          animate="show"
-        >
-          {filteredMovies.map((movie, index) => (
-            <motion.div
-              key={generateId("search-movie", movie.id, index)}
-              className="relative"
-              data-movie-id={movie.id}
-            >
-              <MovieCard movie={movie} index={index} />
-            </motion.div>
-          ))}
-        </motion.div>
+        <MovieGrid movies={filteredMovies} prefix="search" />
       )}
     </div>
   );
