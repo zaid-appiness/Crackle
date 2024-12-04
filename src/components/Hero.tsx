@@ -34,20 +34,22 @@ export default function Hero({ movie }: HeroProps) {
   });
 
   const handlePlayClick = () => {
-    if (!user) {
-      const shouldLogin = window.confirm(
-        "Please login to watch videos. Would you like to login now?"
-      );
-      if (shouldLogin) {
-        router.push("/auth/login");
+    if (!isPlaying) {
+      if (!user) {
+        const shouldLogin = window.confirm(
+          "Please login to watch videos. Would you like to login now?"
+        );
+        if (shouldLogin) {
+          router.push("/auth/login");
+        }
+        return;
       }
-      return;
     }
-    setIsPlaying(true);
+    setIsPlaying(!isPlaying);
   };
 
   return (
-    <div className="relative h-[85vh] w-full overflow-hidden">
+    <div className="relative h-[70vh] sm:h-[85vh] w-full overflow-hidden">
       <AnimatePresence mode="wait">
         {!isPlaying ? (
           <motion.div
@@ -63,6 +65,7 @@ export default function Hero({ movie }: HeroProps) {
               fill
               priority
               className="object-cover"
+              sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
@@ -106,7 +109,7 @@ export default function Hero({ movie }: HeroProps) {
       </AnimatePresence>
 
       {/* Content Container */}
-      <div className="relative h-full container mx-auto px-6">
+      <div className="relative h-full container mx-auto px-4 sm:px-6">
         <div
           className={`relative h-full ${
             isPlaying ? "opacity-50 hover:opacity-100" : "opacity-100"
@@ -117,7 +120,7 @@ export default function Hero({ movie }: HeroProps) {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="absolute top-1/2 -translate-y-1/2 max-w-2xl space-y-6"
+            className="absolute top-1/2 -translate-y-1/2 max-w-2xl space-y-3 sm:space-y-6"
           >
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -127,42 +130,46 @@ export default function Hero({ movie }: HeroProps) {
                 ease: "easeOut",
                 delay: 0.5,
               }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold"
+              className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold"
             >
               <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
                 {movie.title}
               </span>
             </motion.h1>
 
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/20 rounded-full text-yellow-500 font-semibold">
-                <FaStar />
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              <div
+                className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-yellow-500/20 
+              rounded-full text-yellow-500 font-semibold text-sm sm:text-base"
+              >
+                <FaStar className="text-sm sm:text-base" />
                 <span>{movie.vote_average.toFixed(1)}</span>
               </div>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.8 }}
-                className="px-4 py-2 bg-blue-500/20 rounded-full text-blue-400 text-sm"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-500/20 rounded-full text-blue-400 
+                text-xs sm:text-sm"
               >
                 Trending Now
               </motion.div>
             </div>
 
-            <p className="text-lg text-gray-300 max-w-2xl line-clamp-3">
+            <p className="text-sm sm:text-base md:text-lg text-gray-300 max-w-2xl line-clamp-2 sm:line-clamp-3">
               {movie.overview}
             </p>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               {videoSource && (
                 <motion.button
                   onClick={handlePlayClick}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg 
-                  hover:bg-red-500 transition-colors group"
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-600 text-white 
+                  text-sm sm:text-base rounded-lg hover:bg-red-500 transition-colors group"
                 >
-                  <FaPlay className="group-hover:animate-pulse" />
+                  <FaPlay className="text-sm sm:text-base group-hover:animate-pulse" />
                   {isPlaying ? "Watch Poster" : "Watch Trailer"}
                 </motion.button>
               )}
@@ -170,10 +177,11 @@ export default function Hero({ movie }: HeroProps) {
                 onClick={() => router.push(`/movie/${movie.id}`)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-6 py-3 bg-gray-800/80 text-white rounded-lg 
-                hover:bg-gray-700/80 transition-colors backdrop-blur-sm border border-gray-700/50"
+                className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gray-800/80 text-white 
+                text-sm sm:text-base rounded-lg hover:bg-gray-700/80 transition-colors backdrop-blur-sm 
+                border border-gray-700/50"
               >
-                <FaInfoCircle />
+                <FaInfoCircle className="text-sm sm:text-base" />
                 More Info
               </motion.button>
               {isPlaying && (
@@ -187,14 +195,14 @@ export default function Hero({ movie }: HeroProps) {
                   }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsMuted(!isMuted)}
-                  className="flex items-center justify-center w-12 h-12 rounded-full 
-                  bg-white/5 backdrop-blur-sm border border-white/10 transition-all 
-                  hover:border-white/20 group"
+                  className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full 
+                  bg-white/5 backdrop-blur-sm border border-white/10 transition-all hover:border-white/20 
+                  group"
                 >
                   {isMuted ? (
-                    <FaVolumeMute className="text-white/70 text-xl group-hover:text-white transition-colors" />
+                    <FaVolumeMute className="text-white/70 text-lg sm:text-xl group-hover:text-white transition-colors" />
                   ) : (
-                    <FaVolumeUp className="text-white/70 text-xl group-hover:text-white transition-colors" />
+                    <FaVolumeUp className="text-white/70 text-lg sm:text-xl group-hover:text-white transition-colors" />
                   )}
                 </motion.button>
               )}
@@ -205,7 +213,8 @@ export default function Hero({ movie }: HeroProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="hidden lg:block absolute right-8 bottom-[-10%] w-64 aspect-[2/3] rotate-[-6deg]"
+            className="hidden lg:block absolute right-8 bottom-[-10%] w-48 sm:w-56 md:w-64 aspect-[2/3] 
+            rotate-[-6deg]"
           >
             <div className="relative w-full h-full rounded-lg overflow-hidden shadow-2xl">
               <Image
@@ -213,6 +222,7 @@ export default function Hero({ movie }: HeroProps) {
                 alt={movie.title}
                 fill
                 className="object-cover"
+                sizes="(max-width: 768px) 192px, (max-width: 1024px) 224px, 256px"
               />
             </div>
           </motion.div>

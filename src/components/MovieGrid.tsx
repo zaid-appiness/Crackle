@@ -28,7 +28,8 @@ export default function MovieGrid({
 
   return (
     <motion.div
-      className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 
+      sm:gap-4 md:gap-6"
       variants={{
         hidden: { opacity: 0 },
         show: {
@@ -43,7 +44,7 @@ export default function MovieGrid({
       {movies.map((movie, index) => (
         <motion.div
           key={`${prefix}-${movie.id}-${index}`}
-          className="relative"
+          className="relative aspect-[2/3]"
           data-movie-id={movie.id}
           variants={{
             hidden: { opacity: 0, y: 20 },

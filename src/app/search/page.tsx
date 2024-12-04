@@ -1,28 +1,38 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { movieApi } from "@/lib/api";
 import Loading from "@/components/Loading";
 import MovieGrid from "@/components/MovieGrid";
 import NoResults from "@/components/NoResults";
 import PageHeader from "@/components/PageHeader";
 import { useMovieList } from "@/hooks/useMovieList";
+import { useAuth } from "@/contexts/AuthContext";
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const { setFilters, filterMovies } = useMovieList();
+  const router = useRouter();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/login?message=Please login to search movies");
+    }
+  }, [user, router]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["search", query],
     queryFn: () => movieApi.searchMovies(query),
-    enabled: query.length > 0,
+    enabled: query.length > 0 && !!user,
   });
 
   const filteredMovies = data?.results ? filterMovies(data.results) : [];
 
+  if (!user) return null;
   if (isLoading) return <Loading />;
 
   return (
@@ -31,7 +41,6 @@ function SearchPageContent() {
         title={`Search Results for "${query}"`}
         subtitle={`Found ${filteredMovies.length} movies`}
         onFilterChange={setFilters}
-        onFilterReset={() => setFilters({ rating: 0, genre: null })}
       />
 
       {!filteredMovies?.length ? (

@@ -22,23 +22,27 @@ export default function PageHeader({
   initialFilters,
 }: PageHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-8">
-      <div className="space-y-2">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 mb-6 sm:mb-8">
+      <div className="space-y-1 sm:space-y-2">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold text-white"
+          className="text-2xl sm:text-3xl md:text-4xl font-bold text-white"
         >
           {title}
         </motion.h1>
-        {subtitle && <p className="text-gray-400">{subtitle}</p>}
+        {subtitle && (
+          <p className="text-sm sm:text-base text-gray-400">{subtitle}</p>
+        )}
       </div>
       {showFilters && onFilterChange && onResetFilters && (
-        <MovieFilters
-          onFilterChange={onFilterChange}
-          onFilterReset={onResetFilters}
-          initialFilters={initialFilters}
-        />
+        <div className="flex-shrink-0">
+          <MovieFilters
+            onFilterChange={onFilterChange}
+            onFilterReset={onResetFilters}
+            initialFilters={initialFilters}
+          />
+        </div>
       )}
     </div>
   );

@@ -4,129 +4,151 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Movie } from "@/types/movie";
-import MovieCardSkeleton from "./MovieCardSkeleton";
-import { FaStar, FaCalendar, FaPlayCircle } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 interface MovieCardProps {
   movie: Movie;
   index: number;
 }
 
-export default function MovieCard({ movie }: MovieCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
+export default function MovieCard({ movie, index }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
 
   const { data: similarMovies } = useQuery({
-    queryKey: ["similar", movie.id],
+    queryKey: ["similar-movies", movie.id],
     queryFn: () => movieApi.getSimilarMovies(movie.id),
     enabled: isHovered,
-    staleTime: 1000 * 60 * 5,
   });
+
+  const handleSimilarMovieClick = (e: React.MouseEvent, movieId: number) => {
+    e.stopPropagation(); // Prevent triggering parent card's click
+    router.push(`/movie/${movieId}`);
+    setIsHovered(false);
+  };
 
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="relative aspect-[2/3] rounded-lg overflow-hidden cursor-pointer group"
+      className="group relative w-full h-full rounded-lg overflow-hidden cursor-pointer"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
     >
-      {!imageLoaded && <MovieCardSkeleton />}
+      {/* Poster Image */}
+      <Image
+        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+        alt={movie.title}
+        fill
+        className="object-cover"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+        priority={index < 6}
+      />
+
+      {/* Overlay */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: imageLoaded ? 1 : 0 }}
+        className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      />
+
+      {/* Content */}
+      <motion.div
+        className="absolute inset-x-0 bottom-0 p-3 sm:p-4"
+        initial={false}
+        animate={{
+          y: isHovered ? 0 : "100%",
+          opacity: isHovered ? 1 : 0,
+        }}
         transition={{ duration: 0.3 }}
-        className="absolute inset-0"
       >
-        <Image
-          src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-          alt={movie.title}
-          fill
-          className="object-cover"
-          onLoad={() => setImageLoaded(true)}
-          priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+        <div className="space-y-2">
+          <h3 className="text-sm sm:text-base font-semibold text-white line-clamp-2">
+            {movie.title}
+          </h3>
+          <div className="flex items-center gap-1 text-yellow-500">
+            <FaStar className="text-xs sm:text-sm" />
+            <span className="text-xs sm:text-sm text-white">
+              {movie.vote_average.toFixed(1)}
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-gray-300 line-clamp-2">
+            {movie.overview}
+          </p>
 
-        {/* Content Overlay */}
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/80 p-4 flex flex-col justify-between"
-            >
-              {/* Movie Info */}
-              <div className="space-y-2">
-                <h3 className="text-white font-semibold line-clamp-2">
-                  {movie.title}
-                </h3>
-                <div className="flex items-center gap-3 text-sm text-gray-300">
-                  <div className="flex items-center gap-1">
-                    <FaStar className="text-yellow-500" />
-                    <span>{movie.vote_average.toFixed(1)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <FaCalendar className="text-gray-400" />
-                    <span>{new Date(movie.release_date).getFullYear()}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Similar Movies Preview */}
-              {similarMovies && similarMovies.results.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="space-y-2"
-                >
-                  <h4 className="text-sm font-medium text-gray-400">
-                    Similar Movies
-                  </h4>
-                  <div className="similar-movies-container flex gap-2 pb-2">
-                    {similarMovies.results.slice(0, 3).map((similar: Movie) => (
-                      <div
-                        key={similar.id}
-                        className="flex-shrink-0 w-16 h-24 relative rounded overflow-hidden 
-                        transform transition-transform hover:scale-105"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering parent's onClick
-                        }}
-                      >
-                        <Image
-                          src={`https://image.tmdb.org/t/p/w200${similar.poster_path}`}
-                          alt={similar.title}
-                          fill
-                          className="object-cover"
-                        />
-                        <div
-                          className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 
-                        transition-opacity flex items-center justify-center"
-                        >
-                          <FaPlayCircle className="text-white text-lg" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* View Details Button */}
+          {/* Similar Movies */}
+          <AnimatePresence>
+            {isHovered && similarMovies?.results && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="flex items-center gap-2 text-blue-400 text-sm mt-2"
+                exit={{ opacity: 0 }}
+                className="pt-2 space-y-2"
               >
-                <FaPlayCircle />
-                <span>View Details</span>
+                <h4 className="text-xs sm:text-sm font-medium text-gray-400">
+                  Similar Movies
+                </h4>
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                  {similarMovies.results.slice(0, 4).map((similar: Movie) => (
+                    <motion.button
+                      key={similar.id}
+                      onClick={(e) => handleSimilarMovieClick(e, similar.id)}
+                      className="flex-shrink-0 w-12 sm:w-14 aspect-[2/3] relative rounded-md overflow-hidden 
+                      group/similar focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Image
+                        src={`https://image.tmdb.org/t/p/w200${similar.poster_path}`}
+                        alt={similar.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 48px, 56px"
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover/similar:bg-black/0 transition-colors" />
+
+                      {/* Tooltip */}
+                      <div
+                        className="absolute opacity-0 group-hover/similar:opacity-100 transition-opacity 
+                      bottom-0 left-0 right-0 p-1 bg-black/80 text-[10px] text-white text-center truncate"
+                      >
+                        {similar.title}
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+
+      {/* Title for non-hover state */}
+      <motion.div
+        className="absolute inset-x-0 bottom-0 p-3 sm:p-4"
+        initial={false}
+        animate={{
+          opacity: isHovered ? 0 : 1,
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="space-y-1">
+          <h3
+            className="text-sm sm:text-base font-semibold text-white line-clamp-2 
+            drop-shadow-lg"
+          >
+            {movie.title}
+          </h3>
+          <div className="flex items-center gap-1 text-yellow-500">
+            <FaStar className="text-xs sm:text-sm" />
+            <span className="text-xs sm:text-sm text-white drop-shadow-lg">
+              {movie.vote_average.toFixed(1)}
+            </span>
+          </div>
+        </div>
       </motion.div>
     </motion.div>
   );
