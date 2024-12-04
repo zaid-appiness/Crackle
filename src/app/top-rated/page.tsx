@@ -10,6 +10,7 @@ import { useState } from "react";
 import MovieFilters, { FilterState } from "@/components/MovieFilters";
 import { useRouter } from "next/navigation";
 import NoResults from "@/components/NoResults";
+import { Movie } from "@/types/movie";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default function TopRatedPage() {
     queryFn: () => movieApi.getTopRatedMovies(),
   });
 
-  const filteredMovies = data?.results.slice(0, 10).filter((movie) => {
+  const filteredMovies = data?.results.slice(0, 10).filter((movie: Movie) => {
     const passesRating = movie.vote_average >= filters.rating;
     const passesGenre =
       !filters.genre || movie.genre_ids.includes(filters.genre);
@@ -75,7 +76,7 @@ export default function TopRatedPage() {
           initial="hidden"
           animate="show"
         >
-          {filteredMovies.map((movie, index) => (
+          {filteredMovies.map((movie: Movie, index: number) => (
             <motion.div
               key={generateId("top-movie", movie.id, index)}
               className="relative"
