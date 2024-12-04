@@ -12,13 +12,14 @@ export function useMovieList() {
   const filterMovies = (movies: Movie[]) => {
     return movies.filter((movie) => {
       const passesRating = movie.vote_average >= filters.rating;
-      const passesGenre = !filters.genre || movie.genre_ids.includes(filters.genre);
+      const passesGenre =
+        !filters.genre || movie.genre_ids.includes(filters.genre);
       return passesRating && passesGenre;
     });
   };
 
-  const handlePageChange = (newPage: number, totalPages: number) => {
-    if (newPage < 1 || newPage > totalPages) return;
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
     setPage(newPage);
   };
@@ -30,4 +31,4 @@ export function useMovieList() {
     filterMovies,
     handlePageChange,
   };
-} 
+}

@@ -3,6 +3,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import ReactPlayer from "react-player/lazy";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface TrailerModalProps {
   videoId: string;
@@ -15,6 +18,23 @@ export default function TrailerModal({
   isOpen,
   onClose,
 }: TrailerModalProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isOpen && !user) {
+      const shouldLogin = window.confirm(
+        "Please login to watch videos. Would you like to login now?"
+      );
+      if (shouldLogin) {
+        router.push("/auth/login");
+      }
+      onClose();
+    }
+  }, [isOpen, user, router, onClose]);
+
+  if (!isOpen) return null;
+
   return (
     <AnimatePresence>
       {isOpen && (

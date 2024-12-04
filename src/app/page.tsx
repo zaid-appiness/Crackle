@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
 import Hero from "@/components/Hero";
@@ -11,32 +8,26 @@ import MovieGridSkeleton from "@/components/MovieGridSkeleton";
 import NoResults from "@/components/NoResults";
 import HeroSkeleton from "@/components/HeroSkeleton";
 import MovieGrid from "@/components/MovieGrid";
-import AnimatedCounter from "@/components/AnimatedCounter";
 import PageHeader from "@/components/PageHeader";
 import Pagination from "@/components/Pagination";
 import { useMovieList } from "@/hooks/useMovieList";
-import { features, stats } from "@/utils/constants";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { filterMovies } from "@/utils/helpers";
+import { motion } from "framer-motion";
+import { features, stats } from "@/utils/constants";
+import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default function Home() {
   const { page, handlePageChange } = useMovieList();
-  const { filters, setFilters, resetFilters } = usePersistedFilters("home");
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login");
-    }
-  }, [loading, user, router]);
+  const { filters } = usePersistedFilters("home");
+  const { user } = useAuth();
 
   const { data: trendingData } = useQuery({
     queryKey: ["movies", "trending"],
     queryFn: () => movieApi.getTrendingMovies(),
   });
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["movies", "popular", page],
     queryFn: () => movieApi.getPopularMovies(page),
   });
@@ -45,18 +36,6 @@ export default function Home() {
     ? filterMovies(data.results, filters)
     : [];
   const totalPages = Math.min(data?.total_pages ?? 0, 500);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   if (isLoading || !trendingData)
     return (
@@ -67,7 +46,6 @@ export default function Home() {
         </div>
       </div>
     );
-  if (error) throw error;
 
   return (
     <motion.div
@@ -76,12 +54,12 @@ export default function Home() {
       className="space-y-16"
     >
       {/* Hero Section */}
-      <Hero movie={trendingData.results[0]} />
+      {trendingData.results[0] && <Hero movie={trendingData.results[0]} />}
 
       {/* Main Content */}
       <div className="container mx-auto px-4 space-y-16">
         {/* Stats Section */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map(({ label, value }) => (
             <motion.div
               key={label}
@@ -96,35 +74,35 @@ export default function Home() {
               <p className="text-gray-400 mt-2">{label}</p>
             </motion.div>
           ))}
-        </section>
+        </div>
 
         {/* Popular Movies Section */}
-        <section className="space-y-8">
+        <div className="space-y-8">
           <PageHeader
             title="Popular Movies"
             subtitle="Most watched movies this week"
-            onFilterChange={setFilters}
-            onFilterReset={resetFilters}
+            showFilters={!!user}
           />
 
-          {!filteredMovies?.length ? (
-            <NoResults />
-          ) : (
+          {filteredMovies.length > 0 ? (
             <>
               <MovieGrid movies={filteredMovies} prefix="home" />
               <Pagination
                 currentPage={page}
                 totalPages={totalPages}
-                onPageChange={(newPage) =>
-                  handlePageChange(newPage, totalPages)
-                }
+                onPageChange={handlePageChange}
               />
             </>
+          ) : (
+            <NoResults
+              message="No movies match your filters"
+              subMessage="Try adjusting your filters or search criteria"
+            />
           )}
-        </section>
+        </div>
 
         {/* Features Section */}
-        <section className="py-16">
+        <div className="py-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -151,7 +129,7 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
-        </section>
+        </div>
       </div>
     </motion.div>
   );

@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
 import { useState, useRef } from "react";
 import ReactPlayer from "react-player";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeroProps {
   movie: Movie;
@@ -25,11 +26,25 @@ export default function Hero({ movie }: HeroProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const playerRef = useRef<ReactPlayer>(null);
+  const { user } = useAuth();
 
   const { data: videoSource } = useQuery({
     queryKey: ["movie-stream", movie.id],
     queryFn: () => movieApi.getMovieStream(movie.id),
   });
+
+  const handlePlayClick = () => {
+    if (!user) {
+      const shouldLogin = window.confirm(
+        "Please login to watch videos. Would you like to login now?"
+      );
+      if (shouldLogin) {
+        router.push("/auth/login");
+      }
+      return;
+    }
+    setIsPlaying(true);
+  };
 
   return (
     <div className="relative h-[85vh] w-full overflow-hidden">
@@ -141,7 +156,7 @@ export default function Hero({ movie }: HeroProps) {
             <div className="flex flex-wrap items-center gap-4">
               {videoSource && (
                 <motion.button
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={handlePlayClick}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg 

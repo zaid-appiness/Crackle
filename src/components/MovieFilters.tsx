@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaStar, FaTimes } from "react-icons/fa";
 import { genres } from "@/utils/constants";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export interface FilterState {
   rating: number;
@@ -28,20 +30,38 @@ export default function MovieFilters({
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const pageKey = pathname === "/" ? "home" : pathname.substring(1);
   const storedFilters = localStorage.getItem(`filters_${pageKey}`);
+  const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     setFilters(storedFilters ? JSON.parse(storedFilters) : initialFilters);
   }, [storedFilters, pageKey]);
 
-  const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
+  const handleFilterChange = (newFilters: FilterState) => {
+    if (!user) {
+      const shouldLogin = window.confirm(
+        "Please login to use filters. Would you like to login now?"
+      );
+      if (shouldLogin) {
+        router.push("/auth/login");
+      }
+      return;
+    }
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const handleReset = () => {
-    const resetFilters = { rating: 0, genre: null };
-    setFilters(resetFilters);
+    if (!user) {
+      const shouldLogin = window.confirm(
+        "Please login to use filters. Would you like to login now?"
+      );
+      if (shouldLogin) {
+        router.push("/auth/login");
+      }
+      return;
+    }
+    setFilters({ rating: 0, genre: null });
     onFilterReset?.();
     setIsOpen(false);
   };
@@ -112,7 +132,10 @@ export default function MovieFilters({
                     <button
                       key={index}
                       onClick={() =>
-                        handleFilterChange({ rating: (index + 1) * 2 })
+                        handleFilterChange({
+                          rating: (index + 1) * 2,
+                          genre: null,
+                        })
                       }
                       className="group relative flex-1 p-2"
                     >
@@ -159,6 +182,7 @@ export default function MovieFilters({
                       key={genre.id}
                       onClick={() =>
                         handleFilterChange({
+                          rating: 0,
                           genre: filters.genre === genre.id ? null : genre.id,
                         })
                       }

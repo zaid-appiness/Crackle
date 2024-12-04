@@ -6,48 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { FaUser, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-
-// Curated genres for the dropdown
-const dropdownGenres = [
-  {
-    category: "Popular Genres",
-    genres: [
-      {
-        id: 28,
-        name: "Action",
-        icon: "🎯",
-        description: "High-energy films with intense sequences",
-        color: "from-red-900 to-red-800",
-      },
-      {
-        id: 35,
-        name: "Comedy",
-        icon: "😄",
-        description: "Humorous and entertaining movies",
-        color: "from-amber-900 to-amber-800",
-      },
-    ],
-  },
-  {
-    category: "Drama & Thrillers",
-    genres: [
-      {
-        id: 18,
-        name: "Drama",
-        icon: "🎭",
-        description: "Character-driven emotional stories",
-        color: "from-purple-900 to-purple-800",
-      },
-      {
-        id: 53,
-        name: "Thriller",
-        icon: "🔍",
-        description: "Suspenseful and intense narratives",
-        color: "from-blue-900 to-blue-800",
-      },
-    ],
-  },
-];
+import { dropdownGenres } from "@/utils/constants";
+import { navLinks } from "@/utils/links";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -85,15 +45,15 @@ export default function Navbar() {
           </Link>
 
           <div className="flex-1 flex items-center justify-center gap-8">
-            <Link href="/trending" className={isActive("/trending")}>
-              Trending
-            </Link>
-            <Link href="/popular" className={isActive("/popular")}>
-              Popular
-            </Link>
-            <Link href="/top-rated" className={isActive("/top-rated")}>
-              Top Rated
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={isActive(link.href)}
+              >
+                {link.label}
+              </Link>
+            ))}
             <div
               className="relative"
               onMouseEnter={() => setShowGenres(true)}
