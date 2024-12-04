@@ -36,12 +36,7 @@ export default function Hero({ movie }: HeroProps) {
   const handlePlayClick = () => {
     if (!isPlaying) {
       if (!user) {
-        const shouldLogin = window.confirm(
-          "Please login to watch videos. Would you like to login now?"
-        );
-        if (shouldLogin) {
-          router.push("/auth/login");
-        }
+        router.push("/auth/login?message=Please login to watch trailer");
         return;
       }
     }

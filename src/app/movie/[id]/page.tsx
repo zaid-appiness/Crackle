@@ -13,9 +13,10 @@ import {
   FaVolumeMute,
 } from "react-icons/fa";
 import Loading from "@/components/Loading";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import MovieGrid from "@/components/MovieGrid";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function MovieDetailPage() {
   const params = useParams();
@@ -23,6 +24,8 @@ export default function MovieDetailPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { user } = useAuth();
+  const router = useRouter();
 
   // Handle mute/unmute using YouTube API
   useEffect(() => {
@@ -37,6 +40,14 @@ export default function MovieDetailPage() {
       );
     }
   }, [isMuted, isPlaying]);
+
+  const playTrailer = () => {
+    if (!user) {
+      router.push("/auth/login?message=Please login to watch trailer");
+      return;
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   const { data: movie, isLoading: isLoadingMovie } = useQuery({
     queryKey: ["movie", movieId],
@@ -157,7 +168,7 @@ export default function MovieDetailPage() {
               <div className="flex items-center gap-4 pt-4 relative z-30">
                 {videoSource && (
                   <motion.button
-                    onClick={() => setIsPlaying(!isPlaying)}
+                    onClick={playTrailer}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg 
