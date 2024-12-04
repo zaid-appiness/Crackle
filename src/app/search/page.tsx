@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
@@ -11,7 +12,7 @@ import NoResults from "@/components/NoResults";
 import MovieGrid from "@/components/MovieGrid";
 import { Movie } from "@/types/movie";
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const [filters, setFilters] = useState<FilterState>({
@@ -59,5 +60,13 @@ export default function SearchPage() {
         <MovieGrid movies={filteredMovies} prefix="search" />
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<MovieGridSkeleton />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }
