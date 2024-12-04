@@ -60,7 +60,7 @@ export default function MovieDetailPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section with Backdrop/Video */}
-      <div className="relative h-[70vh] w-full overflow-hidden rounded-[16px]">
+      <div className="relative h-[70vh] w-full overflow-hidden">
         <AnimatePresence mode="wait">
           {!isPlaying ? (
             <motion.div

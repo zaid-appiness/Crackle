@@ -32,7 +32,7 @@ export default function Hero({ movie }: HeroProps) {
   });
 
   return (
-    <div className="relative h-[85vh] w-full overflow-hidden rounded-[16px]">
+    <div className="relative h-[85vh] w-full overflow-hidden">
       <AnimatePresence mode="wait">
         {!isPlaying ? (
           <motion.div
