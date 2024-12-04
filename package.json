@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@tanstack/react-query": "latest",
-    "@tanstack/react-query-devtools": "^5.62.2",
+    "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-query-devtools": "^5.0.0",
     "axios": "latest",
     "framer-motion": "latest",
     "next": "latest",

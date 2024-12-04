@@ -7,17 +7,20 @@ import Loading from "@/components/Loading";
 import MovieGrid from "@/components/MovieGrid";
 import NoResults from "@/components/NoResults";
 import PageHeader from "@/components/PageHeader";
-import { useMovieList } from "@/hooks/useMovieList";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { filterMovies } from "@/utils/helpers";
 
 function TrendingPageContent() {
-  const { setFilters, filterMovies } = useMovieList();
+  const { filters, setFilters, resetFilters } = usePersistedFilters("trending");
 
   const { data, isLoading } = useQuery({
     queryKey: ["movies", "trending"],
     queryFn: () => movieApi.getTrendingMovies(),
   });
 
-  const filteredMovies = data?.results ? filterMovies(data.results) : [];
+  const filteredMovies = data?.results
+    ? filterMovies(data.results, filters)
+    : [];
 
   if (isLoading) return <Loading />;
 
@@ -27,7 +30,8 @@ function TrendingPageContent() {
         title="Trending Now"
         subtitle="What everyone's watching"
         onFilterChange={setFilters}
-        onFilterReset={() => setFilters({ rating: 0, genre: null })}
+        onFilterReset={resetFilters}
+        initialFilters={filters}
       />
 
       {!filteredMovies?.length ? (

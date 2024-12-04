@@ -1,52 +1,41 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
 import Loading from "@/components/Loading";
-import { useState } from "react";
-import MovieFilters, { FilterState } from "@/components/MovieFilters";
-import NoResults from "@/components/NoResults";
-import { Movie } from "@/types/movie";
 import MovieGrid from "@/components/MovieGrid";
+import NoResults from "@/components/NoResults";
+import PageHeader from "@/components/PageHeader";
+import { useMovieList } from "@/hooks/useMovieList";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { filterMovies } from "@/utils/helpers";
 
-export const dynamic = "force-dynamic";
-
-export default function TopRatedPage() {
-  const [filters, setFilters] = useState<FilterState>({
-    rating: 0,
-    genre: null,
-  });
+function TopRatedPageContent() {
+  const { page } = useMovieList();
+  const { filters, setFilters, resetFilters } =
+    usePersistedFilters("top-rated");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["movies", "top-rated"],
+    queryKey: ["movies", "top-rated", page],
     queryFn: () => movieApi.getTopRatedMovies(),
   });
 
-  const filteredMovies = data?.results.slice(0, 10).filter((movie: Movie) => {
-    const passesRating = movie.vote_average >= filters.rating;
-    const passesGenre =
-      !filters.genre || movie.genre_ids.includes(filters.genre);
-    return passesRating && passesGenre;
-  });
+  const filteredMovies = data?.results
+    ? filterMovies(data.results, filters)
+    : [];
 
   if (isLoading) return <Loading />;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold text-white"
-        >
-          Top 10 Movies
-        </motion.h1>
-        <MovieFilters
-          onFilterChange={setFilters}
-          onReset={() => setFilters({ rating: 0, genre: null })}
-        />
-      </div>
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      <PageHeader
+        title="Top 10 Movies"
+        subtitle="Highest rated movies of all time"
+        onFilterChange={setFilters}
+        onFilterReset={resetFilters}
+        initialFilters={filters}
+      />
 
       {!filteredMovies?.length ? (
         <NoResults />
@@ -54,5 +43,13 @@ export default function TopRatedPage() {
         <MovieGrid movies={filteredMovies} prefix="top-rated" />
       )}
     </div>
+  );
+}
+
+export default function TopRatedPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <TopRatedPageContent />
+    </Suspense>
   );
 }

@@ -5,10 +5,11 @@ import MovieFilters, { FilterState } from "./MovieFilters";
 
 interface PageHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle: string;
   showFilters?: boolean;
   onFilterChange?: (filters: FilterState) => void;
   onFilterReset?: () => void;
+  initialFilters?: FilterState;
 }
 
 export default function PageHeader({
@@ -17,6 +18,7 @@ export default function PageHeader({
   showFilters = true,
   onFilterChange,
   onFilterReset,
+  initialFilters,
 }: PageHeaderProps) {
   return (
     <div className="flex justify-between items-center mb-8">
@@ -31,7 +33,11 @@ export default function PageHeader({
         {subtitle && <p className="text-gray-400">{subtitle}</p>}
       </div>
       {showFilters && onFilterChange && onFilterReset && (
-        <MovieFilters onFilterChange={onFilterChange} onReset={onFilterReset} />
+        <MovieFilters
+          onFilterChange={onFilterChange}
+          onFilterReset={onFilterReset}
+          initialFilters={initialFilters}
+        />
       )}
     </div>
   );

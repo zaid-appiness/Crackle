@@ -10,6 +10,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  transpilePackages: ["@tanstack/react-query"],
 };
 
 module.exports = nextConfig;

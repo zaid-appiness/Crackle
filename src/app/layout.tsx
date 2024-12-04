@@ -7,6 +7,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import "./globals.css";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import LoadingBar from "@/components/LoadingBar";
+import CookieConsent from "@/components/CookieConsent";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -60,6 +61,7 @@ export default function RootLayout({
             </div>
           </main>
           <ScrollToTop />
+          <CookieConsent />
         </Providers>
       </body>
     </html>

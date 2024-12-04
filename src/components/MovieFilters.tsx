@@ -4,48 +4,45 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaStar, FaTimes } from "react-icons/fa";
 import { genres } from "@/utils/constants";
-
-interface FilterProps {
-  onFilterChange: (filters: FilterState) => void;
-  onReset: () => void;
-}
+import { usePathname } from "next/navigation";
 
 export interface FilterState {
   rating: number;
   genre: number | null;
 }
 
-export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
+interface MovieFiltersProps {
+  onFilterChange: (filters: FilterState) => void;
+  onFilterReset?: () => void;
+  initialFilters?: FilterState;
+}
+
+export default function MovieFilters({
+  onFilterChange,
+  onFilterReset,
+  initialFilters = { rating: 0, genre: null },
+}: MovieFiltersProps) {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
-  const [activeFilters, setActiveFilters] = useState<FilterState>({
-    rating: 0,
-    genre: null,
-  });
+  const [filters, setFilters] = useState<FilterState>(initialFilters);
+  const pageKey = pathname === "/" ? "home" : pathname.substring(1);
+  const storedFilters = localStorage.getItem(`filters_${pageKey}`);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    setFilters(storedFilters ? JSON.parse(storedFilters) : initialFilters);
+  }, [storedFilters, pageKey]);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...activeFilters, ...newFilters };
-    setActiveFilters(updatedFilters);
+    const updatedFilters = { ...filters, ...newFilters };
+    setFilters(updatedFilters);
     onFilterChange(updatedFilters);
   };
 
   const handleReset = () => {
     const resetFilters = { rating: 0, genre: null };
-    setActiveFilters(resetFilters);
-    onReset();
+    setFilters(resetFilters);
+    onFilterReset?.();
     setIsOpen(false);
   };
 
@@ -59,18 +56,18 @@ export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
       >
         <FaFilter
           className={`transition-all duration-300 ${
-            activeFilters.rating > 0 || activeFilters.genre !== null
+            filters.rating > 0 || filters.genre !== null
               ? "text-purple-500 rotate-180 scale-110"
               : "text-gray-400 group-hover:scale-110"
           }`}
         />
         <span className="hidden sm:inline">Filters</span>
-        {(activeFilters.rating > 0 || activeFilters.genre !== null) && (
+        {(filters.rating > 0 || filters.genre !== null) && (
           <span
             className="flex items-center justify-center w-5 h-5 text-xs bg-purple-500 
           text-white rounded-full animate-pulse"
           >
-            {(activeFilters.rating > 0 ? 1 : 0) + (activeFilters.genre ? 1 : 0)}
+            {(filters.rating > 0 ? 1 : 0) + (filters.genre ? 1 : 0)}
           </span>
         )}
       </button>
@@ -100,13 +97,13 @@ export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
                   Minimum Rating
-                  {activeFilters.rating > 0 && (
+                  {filters.rating > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       className="px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-500 rounded-full"
                     >
-                      {activeFilters.rating}.0+
+                      {filters.rating}.0+
                     </motion.span>
                   )}
                 </h3>
@@ -122,7 +119,7 @@ export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
                       <FaStar
                         className={`w-full h-full transition-all duration-300 transform 
                         ${
-                          (index + 1) * 2 <= activeFilters.rating
+                          (index + 1) * 2 <= filters.rating
                             ? "text-yellow-500 scale-110"
                             : "text-gray-600 group-hover:text-gray-500 group-hover:scale-110"
                         }`}
@@ -143,13 +140,13 @@ export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
               <div>
                 <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
                   Genre
-                  {activeFilters.genre && (
+                  {filters.genre && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-500 rounded-full"
                     >
-                      {genres.find((g) => g.id === activeFilters.genre)?.name}
+                      {genres.find((g) => g.id === filters.genre)?.name}
                     </motion.span>
                   )}
                 </h3>
@@ -162,13 +159,12 @@ export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
                       key={genre.id}
                       onClick={() =>
                         handleFilterChange({
-                          genre:
-                            activeFilters.genre === genre.id ? null : genre.id,
+                          genre: filters.genre === genre.id ? null : genre.id,
                         })
                       }
                       className={`px-4 py-2.5 text-sm rounded-xl transition-all duration-300 transform 
                       hover:scale-[1.02] ${
-                        activeFilters.genre === genre.id
+                        filters.genre === genre.id
                           ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium shadow-lg"
                           : "bg-gray-800/50 text-gray-400 hover:bg-gray-800 hover:text-white"
                       }`}
@@ -180,7 +176,7 @@ export default function MovieFilters({ onFilterChange, onReset }: FilterProps) {
               </div>
 
               {/* Reset Button */}
-              {(activeFilters.rating > 0 || activeFilters.genre !== null) && (
+              {(filters.rating > 0 || filters.genre !== null) && (
                 <motion.button
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

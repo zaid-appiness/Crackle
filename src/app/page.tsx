@@ -13,9 +13,12 @@ import PageHeader from "@/components/PageHeader";
 import Pagination from "@/components/Pagination";
 import { useMovieList } from "@/hooks/useMovieList";
 import { features, stats } from "@/utils/constants";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { filterMovies } from "@/utils/helpers";
 
 export default function Home() {
-  const { page, setFilters, filterMovies, handlePageChange } = useMovieList();
+  const { page, handlePageChange } = useMovieList();
+  const { filters, setFilters, resetFilters } = usePersistedFilters("home");
 
   const { data: trendingData } = useQuery({
     queryKey: ["movies", "trending"],
@@ -27,7 +30,9 @@ export default function Home() {
     queryFn: () => movieApi.getPopularMovies(page),
   });
 
-  const filteredMovies = data?.results ? filterMovies(data.results) : [];
+  const filteredMovies = data?.results
+    ? filterMovies(data.results, filters)
+    : [];
   const totalPages = Math.min(data?.total_pages ?? 0, 500);
 
   if (isLoading || !trendingData)
@@ -76,7 +81,7 @@ export default function Home() {
             title="Popular Movies"
             subtitle="Most watched movies this week"
             onFilterChange={setFilters}
-            onFilterReset={() => setFilters({ rating: 0, genre: null })}
+            onFilterReset={resetFilters}
           />
 
           {!filteredMovies?.length ? (

@@ -14,6 +14,8 @@ import { useMovieList } from "@/hooks/useMovieList";
 import { genreData } from "@/utils/constants";
 import { Genre } from "@/types/genre";
 import { FaArrowLeft, FaChevronDown } from "react-icons/fa";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { filterMovies } from "@/utils/helpers";
 
 function GenreCard({ genre }: { genre: Genre }) {
   const router = useRouter();
@@ -119,13 +121,16 @@ function GenreSection({
 }
 
 function GenresPageContent() {
+  const [openSection, setOpenSection] = useState<string | null>(
+    "Action & Adventure"
+  );
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedGenre = Number(searchParams.get("selected")) || null;
-  const { page, filterMovies, handlePageChange } = useMovieList();
-  const [openSection, setOpenSection] = useState<string | null>(
-    "Action & Adventure"
-  ); // Default open section
+  const { page, handlePageChange } = useMovieList();
+  const { filters, setFilters, resetFilters } = usePersistedFilters(
+    `genre_${selectedGenre}`
+  );
 
   const { data, isLoading } = useQuery({
     queryKey: ["movies", "genre", selectedGenre, page],
@@ -140,7 +145,9 @@ function GenresPageContent() {
     .flatMap((category) => category.genres)
     .find((genre) => genre.id === selectedGenre);
 
-  const filteredMovies = data?.results ? filterMovies(data.results) : [];
+  const filteredMovies = data?.results
+    ? filterMovies(data.results, filters)
+    : [];
   const totalPages = Math.min(data?.total_pages ?? 0, 500);
 
   return (
@@ -192,9 +199,14 @@ function GenresPageContent() {
         ) : (
           <div className="space-y-8">
             <PageHeader
-              title="Explore Genres"
-              subtitle="Discover movies across different categories"
-              showFilters={false}
+              title={currentGenre?.name || "Explore Genres"}
+              subtitle={
+                currentGenre?.description ||
+                "Discover movies across different genres"
+              }
+              onFilterChange={setFilters}
+              onFilterReset={resetFilters}
+              showFilters={!!selectedGenre}
             />
 
             <div className="space-y-4">
