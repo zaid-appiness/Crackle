@@ -199,11 +199,8 @@ function GenresPageContent() {
         ) : (
           <div className="space-y-8">
             <PageHeader
-              title={currentGenre?.name || "Explore Genres"}
-              subtitle={
-                currentGenre?.description ||
-                "Discover movies across different genres"
-              }
+              title="Explore Genres"
+              subtitle="Discover movies across different genres"
               onFilterChange={setFilters}
               onFilterReset={resetFilters}
               showFilters={!!selectedGenre}

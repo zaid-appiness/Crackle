@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
@@ -19,6 +22,14 @@ import { filterMovies } from "@/utils/helpers";
 export default function Home() {
   const { page, handlePageChange } = useMovieList();
   const { filters, setFilters, resetFilters } = usePersistedFilters("home");
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/login");
+    }
+  }, [loading, user, router]);
 
   const { data: trendingData } = useQuery({
     queryKey: ["movies", "trending"],
@@ -34,6 +45,18 @@ export default function Home() {
     ? filterMovies(data.results, filters)
     : [];
   const totalPages = Math.min(data?.total_pages ?? 0, 500);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   if (isLoading || !trendingData)
     return (
