@@ -3,57 +3,61 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function CookieConsent() {
-  const [showConsent, setShowConsent] = useState(false);
+interface CookieConsentProps {
+  onAccept: () => void;
+}
+
+const CookieConsent = ({ onAccept }: CookieConsentProps) => {
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const hasConsented = localStorage.getItem("cookieConsent");
-    if (!hasConsented) {
-      setShowConsent(true);
+    const hasConsent = localStorage.getItem("cookieConsent");
+    if (!hasConsent) {
+      setShowModal(true);
     }
   }, []);
 
   const handleAccept = () => {
     localStorage.setItem("cookieConsent", "true");
-    setShowConsent(false);
+    setShowModal(false);
+    onAccept();
   };
 
   return (
     <AnimatePresence>
-      {showConsent && (
+      {showModal && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gray-900/95 
-          backdrop-blur-sm border-t border-gray-800"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
         >
-          <div
-            className="container mx-auto flex flex-col sm:flex-row items-center 
-          justify-between gap-4"
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-zinc-900 p-8 rounded-xl shadow-2xl max-w-lg w-full mx-4 border border-zinc-700"
           >
-            <p className="text-gray-300 text-sm text-center sm:text-left">
-              We use cookies to enhance your experience. By continuing to visit
-              this site, you agree to our use of cookies.{" "}
-              <a
-                href="/privacy"
-                className="text-blue-400 hover:text-blue-300 underline"
-              >
-                Learn more
-              </a>
+            <h2 className="text-2xl font-bold mb-4">Cookie Consent</h2>
+            <p className="text-gray-300 mb-6">
+              We use cookies to enhance your experience on our website. By
+              continuing to use this site, you agree to our use of cookies for
+              analytics, personalized content, and ads.
             </p>
-            <div className="flex gap-4">
+            <div className="flex justify-end gap-4">
               <button
                 onClick={handleAccept}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg 
-                hover:bg-blue-500 transition-colors"
+                className="px-6 py-2 bg-primary hover:bg-primary/80 text-white rounded-lg 
+                transition-colors duration-200 font-semibold"
               >
-                Accept
+                Accept & Continue
               </button>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
-}
+};
+
+export default CookieConsent;
