@@ -48,10 +48,10 @@ export const movieApi = {
     return response.data;
   },
 
-  getTopRatedMovies: async () => {
+  getTopRatedMovies: async (page: number = 1) => {
     const response = await api.get("", {
       params: {
-        endpoint: "/movie/top_rated?page=1",
+        endpoint: `/movie/top_rated?page=${page}`,
       },
     });
     return response.data;
@@ -84,10 +84,10 @@ export const movieApi = {
     return response.data;
   },
 
-  getTrendingMovies: async () => {
+  getTrendingMovies: async (page: number = 1) => {
     const response = await api.get("", {
       params: {
-        endpoint: "/trending/movie/day",
+        endpoint: `/trending/movie/week?page=${page}`,
       },
     });
     return response.data;

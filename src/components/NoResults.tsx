@@ -4,11 +4,13 @@ import { FaFilter } from "react-icons/fa";
 interface NoResultsProps {
   message?: string;
   subMessage?: string;
+  onReset?: () => void;
 }
 
 export default function NoResults({
   message = "No movies match your filters",
   subMessage = "Try adjusting your filters or search criteria",
+  onReset,
 }: NoResultsProps) {
   return (
     <motion.div
@@ -32,6 +34,14 @@ export default function NoResults({
       <div className="space-y-2">
         <p className="text-2xl font-semibold text-gray-300">{message}</p>
         <p className="text-gray-500">{subMessage}</p>
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Reset Filters
+          </button>
+        )}
       </div>
     </motion.div>
   );

@@ -19,7 +19,7 @@ import AnimatedCounter from "@/components/AnimatedCounter";
 
 export default function Home() {
   const { page, handlePageChange } = useMovieList();
-  const { filters } = usePersistedFilters("home");
+  const { filters, setFilters, resetFilters } = usePersistedFilters("home");
   const { user } = useAuth();
 
   const { data: trendingData } = useQuery({
@@ -81,7 +81,11 @@ export default function Home() {
           <PageHeader
             title="Popular Movies"
             subtitle="Most watched movies this week"
+            filters={filters}
+            onFilterChange={setFilters}
+            onResetFilters={resetFilters}
             showFilters={!!user}
+            initialFilters={filters}
           />
 
           {filteredMovies.length > 0 ? (

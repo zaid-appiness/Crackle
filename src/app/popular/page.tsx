@@ -33,8 +33,10 @@ function PopularPageContent() {
       <PageHeader
         title="Popular Movies"
         subtitle="Most watched movies"
+        filters={filters}
         onFilterChange={setFilters}
-        onFilterReset={resetFilters}
+        onResetFilters={resetFilters}
+        initialFilters={filters}
       />
 
       {!filteredMovies?.length ? (
@@ -45,7 +47,7 @@ function PopularPageContent() {
           <Pagination
             currentPage={page}
             totalPages={totalPages}
-            onPageChange={(newPage) => handlePageChange(newPage, totalPages)}
+            onPageChange={handlePageChange}
           />
         </>
       )}

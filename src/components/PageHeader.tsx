@@ -5,10 +5,11 @@ import MovieFilters, { FilterState } from "./MovieFilters";
 
 interface PageHeaderProps {
   title: string;
-  subtitle: string;
+  subtitle?: string;
+  filters?: FilterState;
   showFilters?: boolean;
   onFilterChange?: (filters: FilterState) => void;
-  onFilterReset?: () => void;
+  onResetFilters?: () => void;
   initialFilters?: FilterState;
 }
 
@@ -17,7 +18,7 @@ export default function PageHeader({
   subtitle,
   showFilters = true,
   onFilterChange,
-  onFilterReset,
+  onResetFilters,
   initialFilters,
 }: PageHeaderProps) {
   return (
@@ -32,10 +33,10 @@ export default function PageHeader({
         </motion.h1>
         {subtitle && <p className="text-gray-400">{subtitle}</p>}
       </div>
-      {showFilters && onFilterChange && onFilterReset && (
+      {showFilters && onFilterChange && onResetFilters && (
         <MovieFilters
           onFilterChange={onFilterChange}
-          onFilterReset={onFilterReset}
+          onFilterReset={onResetFilters}
           initialFilters={initialFilters}
         />
       )}

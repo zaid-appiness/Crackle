@@ -10,37 +10,47 @@ import PageHeader from "@/components/PageHeader";
 import { useMovieList } from "@/hooks/useMovieList";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { filterMovies } from "@/utils/helpers";
+import Pagination from "@/components/Pagination";
 
 function TopRatedPageContent() {
-  const { page } = useMovieList();
+  const { page, handlePageChange } = useMovieList();
   const { filters, setFilters, resetFilters } =
     usePersistedFilters("top-rated");
 
   const { data, isLoading } = useQuery({
     queryKey: ["movies", "top-rated", page],
-    queryFn: () => movieApi.getTopRatedMovies(),
+    queryFn: () => movieApi.getTopRatedMovies(page),
   });
 
   const filteredMovies = data?.results
     ? filterMovies(data.results, filters)
     : [];
+  const totalPages = Math.min(data?.total_pages ?? 0, 500);
 
   if (isLoading) return <Loading />;
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <PageHeader
-        title="Top 10 Movies"
+        title="Top Rated Movies"
         subtitle="Highest rated movies of all time"
+        filters={filters}
         onFilterChange={setFilters}
-        onFilterReset={resetFilters}
+        onResetFilters={resetFilters}
         initialFilters={filters}
       />
 
       {!filteredMovies?.length ? (
-        <NoResults />
+        <NoResults onReset={resetFilters} />
       ) : (
-        <MovieGrid movies={filteredMovies} prefix="top-rated" />
+        <>
+          <MovieGrid movies={filteredMovies} prefix="top-rated" />
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </div>
   );
