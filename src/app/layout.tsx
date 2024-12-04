@@ -6,6 +6,7 @@ import Providers from "@/components/Providers";
 import ScrollToTop from "@/components/ScrollToTop";
 import "./globals.css";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import LoadingBar from "@/components/LoadingBar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -43,6 +44,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-black w-full overflow-x-hidden`}
       >
         <Providers>
+          <LoadingBar />
           <Navbar />
           <main className="flex-grow w-full">
             <div className="container mx-auto px-4 py-8">
