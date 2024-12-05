@@ -8,8 +8,15 @@ import { useState, useEffect } from "react";
 import CookieConsent from "@/components/CookieConsent";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
+import LoadingBar from "@/components/LoadingBar";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+  adjustFontFallback: true,
+});
+
 const queryClient = new QueryClient();
 
 export default function RootLayout({
@@ -30,7 +37,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" className={inter.className}>
       <head>
         <title>Crackle - Watch Movies Online</title>
         <meta
@@ -39,14 +46,13 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body
-        className={`${inter.className} bg-background text-white min-h-screen`}
-      >
+      <body className="bg-background text-white min-h-screen">
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             {!hasConsent && <CookieConsent onAccept={handleCookieAccept} />}
             <Navbar />
             <main className="container mx-auto px-4 py-8 min-h-screen">
+              <LoadingBar />
               {children}
             </main>
             <Footer />
