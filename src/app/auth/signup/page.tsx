@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ImageUpload from "@/components/ImageUpload";
+import AlertMessage from "@/components/AlertMessage";
 
 interface FormData {
   name: string;
@@ -22,17 +23,47 @@ export default function SignupPage() {
     image: null,
   });
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setError("Please enter your name");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setError("Please enter your email");
+      return false;
+    }
+    if (!formData.password.trim()) {
+      setError("Please enter a password");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return false;
+    }
+    if (!formData.image) {
+      setError("Please upload a profile image");
+      return false;
+    }
+    return true;
+  };
 
   const handleImageUpload = (base64Image: string) => {
-    console.log("Image uploaded:", base64Image.substring(0, 50) + "...");
     setFormData((prev) => ({ ...prev, image: base64Image }));
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
+
+    if (!validateForm()) return;
+
     setIsLoading(true);
 
     try {
@@ -48,13 +79,22 @@ export default function SignupPage() {
         throw new Error(data.error || "Signup failed");
       }
 
-      router.push("/auth/login?message=Account created successfully");
+      setSuccess("Account created successfully! Redirecting to login...");
+      setTimeout(() => {
+        router.push("/auth/login?message=Account created successfully");
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Show success message from URL params (e.g., after email verification)
+  const messageFromUrl = searchParams.get("message");
+  if (messageFromUrl && !success) {
+    setSuccess(messageFromUrl);
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -74,15 +114,23 @@ export default function SignupPage() {
           </p>
         </div>
 
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg"
-          >
-            <span className="block text-sm">{error}</span>
-          </motion.div>
-        )}
+        {/* Alert Messages */}
+        <AnimatePresence mode="wait">
+          {error && (
+            <AlertMessage
+              type="error"
+              message={error}
+              onClose={() => setError(null)}
+            />
+          )}
+          {success && (
+            <AlertMessage
+              type="success"
+              message={success}
+              onClose={() => setSuccess(null)}
+            />
+          )}
+        </AnimatePresence>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {/* Avatar Upload */}
