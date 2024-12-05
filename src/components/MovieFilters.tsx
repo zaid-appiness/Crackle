@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaFilter, FaStar, FaFire, FaTheaterMasks } from "react-icons/fa";
-import { popularGenres, genreGradients, genres } from "@/utils/genre";
+import {
+  FaFilter,
+  FaStar,
+  FaFire,
+  FaTheaterMasks,
+  FaChevronDown,
+} from "react-icons/fa";
+import { popularGenres, genreGradients } from "@/utils/genre";
 import { FilterState } from "@/types/filters";
 import { useRouter } from "next/navigation";
 import {
@@ -32,84 +38,56 @@ export default function MovieFilters({
     genres: initialFilters?.genres ?? [],
   });
   const filterRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
 
   const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
     setIsOpen(true);
   };
 
   const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 300);
+    setIsOpen(false);
   };
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleRatingChange = (rating: number) => {
+  const handleRatingClick = (rating: number) => {
     const newFilters = { ...filters, rating };
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
 
-  const handleGenreChange = (genreId: number) => {
+  const handleGenreClick = (genreId: number) => {
     const newGenres = filters.genres.includes(genreId)
       ? filters.genres.filter((id) => id !== genreId)
       : [...filters.genres, genreId];
-
     const newFilters = { ...filters, genres: newGenres };
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
 
-  const handleClearGenres = () => {
-    const newFilters = { ...filters, genres: [] };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+  const handleReset = () => {
+    setFilters({ rating: 0, genres: [] });
+    onFilterReset();
   };
 
-  const isFiltersActive = filters.rating > 0 || filters.genres.length > 0;
+  const handleExploreClick = () => {
+    router.push("/genres");
+  };
 
   return (
     <div
-      ref={filterRef}
       className="relative"
+      ref={filterRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all cursor-pointer
-        ${
-          isFiltersActive
-            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-            : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-        }`}
-      >
-        <FaFilter
-          className={isFiltersActive ? "text-white" : "text-gray-400"}
-        />
+      <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors text-gray-300 hover:text-white">
+        <FaFilter className="text-blue-400" />
         <span>Filters</span>
-        {isFiltersActive && (
-          <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="flex items-center justify-center w-5 h-5 text-xs bg-white text-blue-600 rounded-full"
-          >
-            {(filters.rating > 0 ? 1 : 0) + (filters.genres.length > 0 ? 1 : 0)}
-          </motion.span>
-        )}
-      </motion.div>
+        <motion.span
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          className="text-gray-400"
+        >
+          <FaChevronDown />
+        </motion.span>
+      </button>
 
       <AnimatePresence>
         {isOpen && (
@@ -117,69 +95,74 @@ export default function MovieFilters({
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-2 w-96 bg-gray-900/95 backdrop-blur-md rounded-xl 
-            shadow-xl border border-gray-800 overflow-hidden z-50"
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-6 w-[320px] bg-gray-950 backdrop-blur-xl rounded-2xl border border-gray-800 shadow-xl shadow-black/20 overflow-hidden z-[100]"
+            style={{ transformOrigin: "top right" }}
           >
-            <div className="p-6 space-y-8">
-              {/* Rating Section */}
-              <div className="space-y-4">
+            <div className="absolute -top-2 right-6 w-4 h-4 bg-gray-950 border-l border-t border-gray-800 rotate-45" />
+
+            {/* Rating Section */}
+            <div className="p-4 border-b border-gray-800/50">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 text-gray-300">
-                  <FaStar className="text-yellow-500 text-xl" />
-                  <span className="text-base font-medium">Rating</span>
+                  <FaStar className="text-yellow-500" />
+                  <span>Rating</span>
                 </div>
-                <StarRating
-                  value={filters.rating}
-                  onChange={handleRatingChange}
-                />
+                {filters.rating > 0 && (
+                  <ClearButton onClick={() => handleRatingClick(0)} />
+                )}
               </div>
+              <StarRating value={filters.rating} onChange={handleRatingClick} />
+            </div>
 
-              {/* Trending Genres */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-300">
-                    <FaFire className="text-orange-500 text-xl" />
-                    <span className="text-base font-medium">
-                      Trending Genres
-                    </span>
-                  </div>
-                  {filters.genres.length > 0 && (
-                    <ClearButton onClick={handleClearGenres} />
-                  )}
+            {/* Genres Section */}
+            <div className="p-4 border-b border-gray-800/50">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-gray-300">
+                  <FaTheaterMasks className="text-purple-500" />
+                  <span>Genres</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {genres
-                    .filter((genre) => popularGenres.includes(genre.id))
-                    .map((genre) => (
-                      <FilterButton
-                        key={genre.id}
-                        onClick={() => handleGenreChange(genre.id)}
-                        isSelected={filters.genres.includes(genre.id)}
-                        gradient={
-                          genreGradients[
-                            genre.id as keyof typeof genreGradients
-                          ] || "from-neutral-900 to-stone-800"
-                        }
-                      >
-                        {genre.name}
-                      </FilterButton>
-                    ))}
-                </div>
+                {filters.genres.length > 0 && (
+                  <ClearButton
+                    onClick={() => handleGenreClick(filters.genres[0])}
+                  />
+                )}
               </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <ExploreButton
-                  onClick={() => router.push("/genres")}
-                  icon={<FaTheaterMasks />}
-                >
-                  Explore All Genres
-                </ExploreButton>
-
-                <ResetButton
-                  onClick={onFilterReset}
-                  isActive={isFiltersActive}
-                />
+              <div className="flex flex-wrap gap-2">
+                {popularGenres.map((genreId) => {
+                  const genreNames: Record<number, string> = {
+                    28: "Action",
+                    12: "Adventure",
+                    35: "Comedy",
+                    18: "Drama",
+                    27: "Horror",
+                    10749: "Romance",
+                  };
+                  return (
+                    <FilterButton
+                      key={genreId}
+                      onClick={() => handleGenreClick(genreId)}
+                      isSelected={filters.genres.includes(genreId)}
+                      gradient={
+                        genreGradients[genreId as keyof typeof genreGradients]
+                      }
+                    >
+                      {genreNames[genreId]}
+                    </FilterButton>
+                  );
+                })}
               </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-4 space-y-2">
+              <ResetButton
+                onClick={handleReset}
+                isActive={filters.rating > 0 || filters.genres.length > 0}
+              />
+              <ExploreButton onClick={handleExploreClick} icon={<FaFire />}>
+                Explore All Genres
+              </ExploreButton>
             </div>
           </motion.div>
         )}

@@ -228,12 +228,14 @@ export default function Navbar() {
             </div>
 
             {/* User Dropdown */}
-            <div className="relative" ref={dropdownRef}>
+            <div
+              className="relative"
+              ref={dropdownRef}
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => setIsDropdownOpen(false)}
+            >
               {user ? (
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors"
-                >
+                <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors">
                   <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-800">
                     {user.image ? (
                       <Image
@@ -272,11 +274,14 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-48 py-2 bg-gray-800 rounded-xl shadow-xl border border-gray-700/50"
+                    className="absolute right-0 mt-6 w-64 bg-gray-950 backdrop-blur-xl rounded-2xl border border-gray-800 shadow-xl shadow-black/20 overflow-hidden"
+                    style={{ transformOrigin: "top right" }}
                   >
-                    <div className="px-4 py-3 border-b border-gray-700/50">
+                    <div className="absolute -top-2 right-6 w-4 h-4 bg-gray-950 border-l border-t border-gray-800 rotate-45" />
+
+                    <div className="p-4 border-b border-gray-800/50">
                       <div className="flex items-center gap-3">
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-700">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-800">
                           {user?.image ? (
                             <Image
                               src={user?.image}
@@ -292,30 +297,34 @@ export default function Navbar() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">
+                          <p className="text-base font-medium text-white truncate">
                             {user?.name || "User"}
                           </p>
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-sm text-gray-400 truncate">
                             {user?.email}
                           </p>
                         </div>
                       </div>
                     </div>
-                    <div className="py-2">
+
+                    <div className="p-2">
                       <Link
                         href="/profile"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all group"
                       >
-                        <FaUser className="text-blue-400" />
-                        Profile
+                        <span className="p-2 bg-blue-500/10 text-blue-400 rounded-lg group-hover:scale-110 transition-transform">
+                          <FaUser />
+                        </span>
+                        <span>Profile</span>
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all group"
                       >
-                        <FaSignOutAlt />
-                        Logout
+                        <span className="p-2 bg-red-500/10 text-red-400 rounded-lg group-hover:scale-110 transition-transform">
+                          <FaSignOutAlt />
+                        </span>
+                        <span>Logout</span>
                       </button>
                     </div>
                   </motion.div>
