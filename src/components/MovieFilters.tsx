@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaFilter, FaTimes } from "react-icons/fa";
+import { FaFilter, FaStar, FaFire, FaTheaterMasks } from "react-icons/fa";
 import { genres } from "@/utils/constants";
 
 export interface FilterState {
@@ -16,6 +16,17 @@ interface MovieFiltersProps {
   initialFilters?: FilterState;
 }
 
+const popularGenres = [28, 12, 35, 18, 27, 10749];
+
+const genreGradients = {
+  28: "from-red-600 to-orange-600",
+  12: "from-green-600 to-emerald-600",
+  35: "from-yellow-600 to-amber-600",
+  18: "from-blue-600 to-indigo-600",
+  27: "from-purple-600 to-fuchsia-600",
+  10749: "from-pink-600 to-rose-600",
+};
+
 export default function MovieFilters({
   onFilterChange,
   onFilterReset,
@@ -23,6 +34,30 @@ export default function MovieFilters({
 }: MovieFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 300); // Small delay to prevent accidental closing
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleRatingChange = (rating: number) => {
     const newFilters = { ...filters, rating };
@@ -41,123 +76,246 @@ export default function MovieFilters({
     onFilterReset();
   };
 
+  const isFiltersActive = filters.rating > 0 || filters.genre !== null;
+
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm text-gray-300 hover:text-white 
-        transition-colors bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700/50 
-        hover:border-gray-600/50"
+    <div
+      ref={filterRef}
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <motion.div
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all cursor-pointer
+        ${
+          isFiltersActive
+            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+            : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+        }`}
       >
-        <FaFilter className="text-sm sm:text-base" />
-        <span className="hidden sm:inline">Filters</span>
-        {(filters.rating > 0 || filters.genre !== null) && (
-          <span
-            className="inline-flex items-center justify-center w-5 h-5 text-xs bg-blue-500 
-          text-white rounded-full"
+        <FaFilter
+          className={isFiltersActive ? "text-white" : "text-gray-400"}
+        />
+        <span>Filters</span>
+        {isFiltersActive && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="flex items-center justify-center w-5 h-5 text-xs bg-white text-blue-600 rounded-full"
           >
             {(filters.rating > 0 ? 1 : 0) + (filters.genre !== null ? 1 : 0)}
-          </span>
+          </motion.span>
         )}
-      </button>
+      </motion.div>
 
       <AnimatePresence>
         {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-              onClick={() => setIsOpen(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed md:absolute left-4 right-4 md:left-auto md:right-0 top-24 md:top-full 
-              mt-2 p-4 bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-800/50 
-              z-50 md:w-[320px]"
-              style={{ transformOrigin: "top right" }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">Filters</h3>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 text-gray-400 hover:text-white transition-colors"
-                >
-                  <FaTimes />
-                </button>
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            onMouseEnter={() => {
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+              }
+            }}
+            onMouseLeave={handleMouseLeave}
+            className="absolute right-0 mt-2 w-96 bg-gray-900/95 backdrop-blur-md rounded-xl 
+            shadow-xl border border-gray-800 overflow-hidden z-50"
+          >
+            <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar max-h-[calc(100vh-200px)]">
+              {/* Rating Filter */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-gray-300">
+                  <FaStar className="text-yellow-500 text-xl" />
+                  <span className="text-base font-medium">Rating</span>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  {[...Array(5)].map((_, index) => {
+                    const rating = (index + 1) * 2;
+                    const isSelected = filters.rating >= rating;
+                    const isHovered =
+                      hoveredRating !== null && rating <= hoveredRating;
+
+                    return (
+                      <motion.button
+                        key={rating}
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleRatingChange(rating)}
+                        onMouseEnter={() => setHoveredRating(rating)}
+                        onMouseLeave={() => setHoveredRating(null)}
+                        className="relative group"
+                      >
+                        <motion.div
+                          animate={{
+                            scale: isSelected || isHovered ? [1, 1.2, 1] : 1,
+                            rotate: isSelected ? [0, 15, 0] : 0,
+                          }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <FaStar
+                            className={`text-4xl transition-colors duration-300 ${
+                              isSelected
+                                ? "text-yellow-500"
+                                : isHovered
+                                ? "text-yellow-500/70"
+                                : "text-gray-600"
+                            }`}
+                          />
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{
+                            opacity: isHovered ? 1 : 0,
+                            y: isHovered ? 0 : 10,
+                          }}
+                          className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 
+                          text-white text-xs py-1 px-2 rounded whitespace-nowrap"
+                        >
+                          {rating.toFixed(1)}+
+                        </motion.div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="space-y-6">
-                {/* Rating Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Minimum Rating
-                  </label>
-                  <div className="flex items-center gap-2">
-                    {[0, 5, 6, 7, 8, 9].map((rating) => (
-                      <button
-                        key={rating}
-                        onClick={() => handleRatingChange(rating)}
-                        className={`flex-1 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                          filters.rating === rating
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-800/50 text-gray-300 hover:text-white hover:bg-gray-700/50"
-                        }`}
-                      >
-                        {rating === 0 ? "All" : `${rating}+`}
-                      </button>
-                    ))}
+              {/* Popular Genres */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-300">
+                    <FaFire className="text-orange-500 text-xl" />
+                    <span className="text-base font-medium">
+                      Trending Genres
+                    </span>
                   </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleGenreChange(null)}
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Clear
+                  </motion.button>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  {genres
+                    .filter((genre) => popularGenres.includes(genre.id))
+                    .map((genre) => {
+                      const isSelected = filters.genre === genre.id;
+                      return (
+                        <motion.button
+                          key={genre.id}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() =>
+                            handleGenreChange(isSelected ? null : genre.id)
+                          }
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all
+                          ${
+                            isSelected
+                              ? `bg-gradient-to-r ${
+                                  genreGradients[
+                                    genre.id as keyof typeof genreGradients
+                                  ] || "from-purple-600 to-pink-600"
+                                } text-white shadow-lg`
+                              : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                          }`}
+                        >
+                          {genre.name}
+                        </motion.button>
+                      );
+                    })}
+                </div>
+              </div>
 
-                {/* Genre Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Genre
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    <button
-                      onClick={() => handleGenreChange(null)}
-                      className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                        filters.genre === null
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-800/50 text-gray-300 hover:text-white hover:bg-gray-700/50"
-                      }`}
-                    >
-                      All
-                    </button>
-                    {genres.map((genre) => (
-                      <button
-                        key={genre.id}
-                        onClick={() => handleGenreChange(genre.id)}
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors truncate ${
-                          filters.genre === genre.id
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-800/50 text-gray-300 hover:text-white hover:bg-gray-700/50"
-                        }`}
-                      >
-                        {genre.name}
-                      </button>
-                    ))}
+              {/* All Genres */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-300">
+                    <FaTheaterMasks className="text-purple-500 text-xl" />
+                    <span className="text-base font-medium">All Genres</span>
                   </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleGenreChange(null)}
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Clear
+                  </motion.button>
                 </div>
+                <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                  {genres
+                    .filter((genre) => !popularGenres.includes(genre.id))
+                    .map((genre) => {
+                      const isSelected = filters.genre === genre.id;
+                      return (
+                        <motion.button
+                          key={genre.id}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() =>
+                            handleGenreChange(isSelected ? null : genre.id)
+                          }
+                          className={`px-3 py-2 rounded-lg text-sm transition-all
+                          ${
+                            isSelected
+                              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                              : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                          }`}
+                        >
+                          {genre.name}
+                        </motion.button>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {/* Explore All Genres */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => (window.location.href = "/genres")}
+                  className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 
+                  text-white rounded-lg hover:from-blue-500 hover:to-purple-500 
+                  transition-all text-sm font-medium flex items-center justify-center gap-2 group"
+                >
+                  <FaTheaterMasks className="text-lg group-hover:rotate-12 transition-transform" />
+                  Explore All Genres
+                </motion.button>
 
                 {/* Reset Button */}
-                {(filters.rating > 0 || filters.genre !== null) && (
-                  <button
+                {isFiltersActive && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleReset}
-                    className="w-full px-4 py-2 text-sm bg-gray-800/50 text-red-400 rounded-lg 
-                    hover:bg-gray-700/50 transition-colors"
+                    className="w-full px-4 py-2.5 bg-gradient-to-r from-red-500/20 to-orange-500/20 
+                    text-red-500 rounded-lg hover:from-red-500/30 hover:to-orange-500/30 
+                    transition-all text-sm font-medium flex items-center justify-center gap-2 group"
                   >
+                    <motion.span
+                      animate={{ rotate: isFiltersActive ? [0, -360] : 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-lg"
+                    >
+                      ↺
+                    </motion.span>
                     Reset Filters
-                  </button>
+                  </motion.button>
                 )}
               </div>
-            </motion.div>
-          </>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
