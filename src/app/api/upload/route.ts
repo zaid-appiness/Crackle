@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
+import { existsSync } from "fs";
 
 export async function POST(request: Request) {
   try {
@@ -29,8 +30,14 @@ export async function POST(request: Request) {
       file.name.match(/\.[^.]*$/)?.[0] || ".jpg"
     }`;
 
+    // Ensure uploads directory exists
+    const uploadDir = join(process.cwd(), "public/uploads");
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true });
+    }
+
     // Save to public directory
-    const path = join(process.cwd(), "public/uploads", filename);
+    const path = join(uploadDir, filename);
     await writeFile(path, buffer);
 
     // Return the path that can be accessed from the frontend
