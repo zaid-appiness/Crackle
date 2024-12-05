@@ -3,63 +3,95 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCamera, FaSpinner, FaCheck, FaTimes } from "react-icons/fa";
+import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 
 interface ImageUploadProps {
-  onImageUpload: (url: string) => void;
+  onUploadSuccess: (imageUrl: string) => void;
   defaultImage?: string;
+  mode?: "signup" | "profile";
 }
 
 export default function ImageUpload({
-  onImageUpload,
+  onUploadSuccess,
   defaultImage,
+  mode = "profile",
 }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(defaultImage || null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Only check for user ID in profile mode
+    if (mode === "profile" && !user?.id) {
+      setError("Please login to update your profile image");
+      return;
+    }
+
     // Reset states
     setError(null);
     setIsUploading(true);
 
-    // Validate file type
+    // Validate file type and size
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file");
       setIsUploading(false);
       return;
     }
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be less than 5MB");
+      setIsUploading(false);
+      return;
+    }
 
-    // Upload file
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === "string") {
+            setPreview(reader.result);
+            resolve(reader.result);
+          } else {
+            reject(new Error("Failed to read file"));
+          }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
       });
 
-      const data = await response.json();
+      if (mode === "signup") {
+        // For signup, just pass the base64 string
+        onUploadSuccess(base64);
+      } else {
+        // For profile update, send to API
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("userId", user!.id);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Upload failed");
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Upload failed");
+        }
+
+        onUploadSuccess(data.user.image);
       }
-
-      onImageUpload(data.url);
     } catch (err) {
+      console.error("Upload error:", err);
       setError(err instanceof Error ? err.message : "Upload failed");
-      setPreview(null);
+      setPreview(defaultImage || null);
     } finally {
       setIsUploading(false);
     }
@@ -81,10 +113,13 @@ export default function ImageUpload({
         border-4 border-gray-700 group-hover:border-blue-500 transition-colors"
       >
         {preview ? (
-          <img
+          <Image
             src={preview}
             alt="Avatar preview"
             className="w-full h-full object-cover"
+            width={96}
+            height={96}
+            priority
           />
         ) : (
           <div className="w-full h-full bg-gray-800 flex items-center justify-center">
@@ -93,12 +128,14 @@ export default function ImageUpload({
         )}
 
         {/* Upload Overlay */}
-        <motion.div
+        <div
           className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 
-          group-hover:opacity-100 transition-opacity"
+          group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
         >
-          <span className="text-white text-sm">Change Photo</span>
-        </motion.div>
+          <span className="text-white text-sm font-medium px-2 py-1 bg-black/40 rounded-md">
+            Change Photo
+          </span>
+        </div>
       </div>
 
       {/* Status Indicators */}
@@ -109,7 +146,7 @@ export default function ImageUpload({
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full 
-            flex items-center justify-center"
+            flex items-center justify-center shadow-lg"
           >
             <FaSpinner className="text-white animate-spin" />
           </motion.div>
@@ -121,10 +158,11 @@ export default function ImageUpload({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             className="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-red-500 text-white 
-            text-sm px-3 py-1 rounded-lg whitespace-nowrap flex items-center gap-2"
+            text-sm px-3 py-1.5 rounded-lg whitespace-nowrap flex items-center gap-2
+            shadow-lg border border-red-400/20"
           >
-            <FaTimes />
-            {error}
+            <FaTimes className="shrink-0" />
+            <span className="text-xs font-medium">{error}</span>
           </motion.div>
         )}
 
@@ -134,7 +172,7 @@ export default function ImageUpload({
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full 
-            flex items-center justify-center"
+            flex items-center justify-center shadow-lg"
           >
             <FaCheck className="text-white" />
           </motion.div>

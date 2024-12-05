@@ -1,15 +1,28 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
+    console.log("[Upload API] Starting upload process");
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const userId = formData.get("userId") as string;
+
+    console.log("[Upload API] Received file:", {
+      size: file?.size,
+      type: file?.type,
+      userId,
+    });
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
     }
 
     // Validate file type
@@ -20,36 +33,47 @@ export async function POST(request: Request) {
       );
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create unique filename
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const filename = `avatar-${uniqueSuffix}${
-      file.name.match(/\.[^.]*$/)?.[0] || ".jpg"
-    }`;
-
-    // Ensure uploads directory exists
-    const uploadDir = join(process.cwd(), "public/uploads");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "File size must be less than 5MB" },
+        { status: 400 }
+      );
     }
 
-    // Save to public directory
-    const path = join(uploadDir, filename);
-    await writeFile(path, buffer);
+    // Convert file to base64
+    console.log("[Upload API] Converting file to base64");
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    // Return the path that can be accessed from the frontend
+    // Update user with base64 image
+    console.log("[Upload API] Updating user record");
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { image: base64Image },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+      },
+    });
+
+    console.log("[Upload API] Upload successful");
     return NextResponse.json({
-      url: `/uploads/${filename}`,
-      message: "File uploaded successfully",
+      message: "Image uploaded successfully",
+      user,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error("[Upload API] Error:", error);
     return NextResponse.json(
-      { error: "Error uploading file" },
+      {
+        error: error instanceof Error ? error.message : "Error uploading file",
+      },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
