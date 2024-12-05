@@ -1,19 +1,24 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from ".prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined");
+}
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
-    console.log("[Login API] Login attempt for:", email);
+    // Parse request body
+    const body = await request.json();
+    const { email, password } = body;
+
+    console.log("[Login API] Attempting login for:", email);
 
     // Validate input
     if (!email || !password) {
-      console.log("[Login API] Missing email or password");
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
@@ -23,10 +28,17 @@ export async function POST(request: Request) {
     // Find user
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        image: true,
+      },
     });
 
     if (!user) {
-      console.log("[Login API] User not found");
+      console.log("[Login API] User not found:", email);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -36,7 +48,7 @@ export async function POST(request: Request) {
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      console.log("[Login API] Invalid password");
+      console.log("[Login API] Invalid password for user:", email);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -44,12 +56,16 @@ export async function POST(request: Request) {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: "24h",
-    });
-    console.log("[Login API] Token generated");
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
-    // Create response with user data
+    // Create response
     const response = NextResponse.json(
       {
         message: "Login successful",
@@ -63,7 +79,7 @@ export async function POST(request: Request) {
       { status: 200 }
     );
 
-    // Set cookie with token
+    // Set secure cookie
     response.cookies.set({
       name: "token",
       value: token,
@@ -73,8 +89,8 @@ export async function POST(request: Request) {
       path: "/",
       maxAge: 60 * 60 * 24, // 24 hours
     });
-    console.log("[Login API] Cookie set in response");
 
+    console.log("[Login API] Login successful for:", email);
     return response;
   } catch (error) {
     console.error("[Login API] Error:", error);
@@ -82,5 +98,7 @@ export async function POST(request: Request) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
