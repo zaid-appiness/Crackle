@@ -3,19 +3,73 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
-import {
-  FaEdit,
-  FaCog,
-  FaHistory,
-  FaHeart,
-  FaStar,
-  FaMoon,
-  FaBell,
-} from "react-icons/fa";
+import { FaMoon, FaBell, FaEdit } from "react-icons/fa";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import ImageUpload from "@/components/ImageUpload";
 import { UserProfile } from "@/types/userProfile";
+import { tabs } from "@/utils/tabs";
+
+interface TabProps {
+  icon: React.ElementType;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+const Tab = ({ icon: Icon, label, isActive, onClick }: TabProps) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all ${
+      isActive
+        ? "bg-blue-600 text-white"
+        : "bg-gray-800/50 text-gray-400 hover:bg-gray-700/50"
+    }`}
+  >
+    <Icon />
+    {label}
+  </button>
+);
+
+interface StatCardProps {
+  value: number;
+  label: string;
+  color: string;
+}
+
+const StatCard = ({ value, label, color }: StatCardProps) => (
+  <div className="bg-gray-700/30 rounded-lg p-3 text-center">
+    <div className={`text-2xl font-bold ${color}`}>{value}</div>
+    <div className="text-sm text-gray-400">{label}</div>
+  </div>
+);
+
+interface ToggleProps {
+  icon: React.ElementType;
+  label: string;
+  value: boolean;
+  onChange: () => void;
+}
+
+const Toggle = ({ icon: Icon, label, value, onChange }: ToggleProps) => (
+  <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
+    <div className="flex items-center gap-3">
+      <Icon className="text-blue-400" />
+      <span>{label}</span>
+    </div>
+    <button
+      onClick={onChange}
+      className={`w-12 h-6 rounded-full transition-colors ${
+        value ? "bg-blue-600" : "bg-gray-600"
+      }`}
+    >
+      <div
+        className={`w-4 h-4 rounded-full bg-white transition-transform ${
+          value ? "translate-x-7" : "translate-x-1"
+        }`}
+      />
+    </button>
+  </div>
+);
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -25,16 +79,12 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("activity");
 
   useEffect(() => {
-    if (loading) {
-      return; // Wait for auth to initialize
-    }
-
+    if (loading) return;
     if (!user) {
       router.push("/auth/login");
       return;
     }
 
-    // Fetch user profile data
     const fetchProfile = async () => {
       try {
         const response = await fetch(`/api/users/${user.id}`);
@@ -48,9 +98,50 @@ export default function ProfilePage() {
     fetchProfile();
   }, [user, router, loading]);
 
-  if (loading || !profile) {
+  if (!profile) {
     return <ProfileSkeleton />;
   }
+
+  const stats = [
+    {
+      value: profile.watchHistory.length,
+      label: "Watched",
+      color: "text-blue-400",
+    },
+    {
+      value: profile.watchlist.length,
+      label: "Watchlist",
+      color: "text-pink-400",
+    },
+    {
+      value: profile.ratings.length,
+      label: "Ratings",
+      color: "text-yellow-400",
+    },
+  ];
+
+  const toggles = [
+    {
+      icon: FaMoon,
+      label: "Dark Mode",
+      value: profile.darkMode,
+      onChange: () =>
+        setProfile((prev) =>
+          prev ? { ...prev, darkMode: !prev.darkMode } : null
+        ),
+    },
+    {
+      icon: FaBell,
+      label: "Email Notifications",
+      value: profile.emailNotifications,
+      onChange: () =>
+        setProfile((prev) =>
+          prev
+            ? { ...prev, emailNotifications: !prev.emailNotifications }
+            : null
+        ),
+    },
+  ];
 
   const handleImageUpload = async (url: string) => {
     try {
@@ -66,13 +157,6 @@ export default function ProfilePage() {
       console.error("Error updating profile image:", error);
     }
   };
-
-  const tabs = [
-    { id: "activity", label: "Activity", icon: FaHistory },
-    { id: "favorites", label: "Favorites", icon: FaHeart },
-    { id: "ratings", label: "Ratings", icon: FaStar },
-    { id: "settings", label: "Settings", icon: FaCog },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black py-12">
@@ -92,12 +176,15 @@ export default function ProfilePage() {
                   alt={profile.name || "Profile"}
                   fill
                   className="object-cover"
-                  priority
                 />
               </div>
               {isEditing && (
                 <div className="absolute bottom-0 right-0">
-                  <ImageUpload onImageUpload={handleImageUpload} />
+                  <button
+                    onClick={() => handleImageUpload("/path/to/new/image")}
+                  >
+                    <FaEdit className="text-gray-400 hover:text-white transition-colors" />
+                  </button>
                 </div>
               )}
             </div>
@@ -119,24 +206,9 @@ export default function ProfilePage() {
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 max-w-md">
-                <div className="bg-gray-700/30 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-blue-400">
-                    {profile.watchHistory.length}
-                  </div>
-                  <div className="text-sm text-gray-400">Watched</div>
-                </div>
-                <div className="bg-gray-700/30 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-pink-400">
-                    {profile.watchlist.length}
-                  </div>
-                  <div className="text-sm text-gray-400">Watchlist</div>
-                </div>
-                <div className="bg-gray-700/30 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">
-                    {profile.ratings.length}
-                  </div>
-                  <div className="text-sm text-gray-400">Ratings</div>
-                </div>
+                {stats.map((stat, index) => (
+                  <StatCard key={index} {...stat} />
+                ))}
               </div>
             </div>
           </div>
@@ -146,18 +218,13 @@ export default function ProfilePage() {
         <div className="mb-8">
           <div className="flex overflow-x-auto gap-4 pb-4">
             {tabs.map((tab) => (
-              <button
+              <Tab
                 key={tab.id}
+                icon={tab.icon}
+                label={tab.label}
+                isActive={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-all ${
-                  activeTab === tab.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800/50 text-gray-400 hover:bg-gray-700/50"
-                }`}
-              >
-                <tab.icon />
-                {tab.label}
-              </button>
+              />
             ))}
           </div>
         </div>
@@ -175,57 +242,9 @@ export default function ProfilePage() {
                 Settings
               </h2>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaMoon className="text-blue-400" />
-                    <span>Dark Mode</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setProfile((prev) =>
-                        prev ? { ...prev, darkMode: !prev.darkMode } : null
-                      );
-                    }}
-                    className={`w-12 h-6 rounded-full transition-colors ${
-                      profile.darkMode ? "bg-blue-600" : "bg-gray-600"
-                    }`}
-                  >
-                    <div
-                      className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                        profile.darkMode ? "translate-x-7" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FaBell className="text-blue-400" />
-                    <span>Email Notifications</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setProfile((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              emailNotifications: !prev.emailNotifications,
-                            }
-                          : null
-                      );
-                    }}
-                    className={`w-12 h-6 rounded-full transition-colors ${
-                      profile.emailNotifications ? "bg-blue-600" : "bg-gray-600"
-                    }`}
-                  >
-                    <div
-                      className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                        profile.emailNotifications
-                          ? "translate-x-7"
-                          : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
+                {toggles.map((toggle, index) => (
+                  <Toggle key={index} {...toggle} />
+                ))}
               </div>
             </div>
           ) : (
