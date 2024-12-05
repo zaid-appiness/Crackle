@@ -11,12 +11,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   transpilePackages: ["@tanstack/react-query"],
-  output: "standalone",
-  experimental: {
-    outputFileTracingIncludes: {
-      "/api/upload/**/*": ["public/uploads/**/*"],
-    },
-  },
 };
 
 module.exports = nextConfig;
