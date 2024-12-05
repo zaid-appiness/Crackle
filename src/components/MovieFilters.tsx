@@ -3,18 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaStar, FaFire, FaTheaterMasks } from "react-icons/fa";
-import { genres } from "@/utils/genre";
 import { FilterState } from "@/types/filters";
-
-const popularGenres = [28, 12, 35, 18, 27, 10749];
-const genreGradients = {
-  28: "from-red-600 to-orange-600",
-  12: "from-green-600 to-emerald-600",
-  35: "from-yellow-600 to-amber-600",
-  18: "from-blue-600 to-indigo-600",
-  27: "from-purple-600 to-fuchsia-600",
-  10749: "from-pink-600 to-rose-600",
-};
+import { useRouter } from "next/navigation";
+import { genres, genreGradients, popularGenres, Genre } from "@/utils/genre";
 
 interface MovieFiltersProps {
   onFilterChange: (filters: FilterState) => void;
@@ -27,6 +18,7 @@ export default function MovieFilters({
   onFilterReset,
   initialFilters,
 }: MovieFiltersProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     rating: initialFilters?.rating ?? 0,
@@ -184,7 +176,7 @@ export default function MovieFilters({
                 </div>
               </div>
 
-              {/* Popular Genres */}
+              {/* Trending Genres */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-300">
@@ -210,8 +202,8 @@ export default function MovieFilters({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {genres
-                    .filter((genre) => popularGenres.includes(genre.id))
-                    .map((genre) => {
+                    .filter((genre: Genre) => popularGenres.includes(genre.id))
+                    .map((genre: Genre) => {
                       const isSelected = filters.genres.includes(genre.id);
                       return (
                         <motion.button
@@ -225,58 +217,7 @@ export default function MovieFilters({
                               ? `bg-gradient-to-r ${
                                   genreGradients[
                                     genre.id as keyof typeof genreGradients
-                                  ] || "from-purple-600 to-pink-600"
-                                } text-white shadow-lg`
-                              : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
-                          }`}
-                        >
-                          {genre.name}
-                        </motion.button>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* All Genres */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-300">
-                    <FaTheaterMasks className="text-purple-500 text-xl" />
-                    <span className="text-base font-medium">All Genres</span>
-                  </div>
-                  {filters.genres.length > 0 && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        const newFilters = { ...filters, genres: [] };
-                        setFilters(newFilters);
-                        onFilterChange(newFilters);
-                      }}
-                      className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                    >
-                      Clear
-                    </motion.button>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                  {genres
-                    .filter((genre) => !popularGenres.includes(genre.id))
-                    .map((genre) => {
-                      const isSelected = filters.genres.includes(genre.id);
-                      return (
-                        <motion.button
-                          key={genre.id}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => handleGenreChange(genre.id)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all
-                          ${
-                            isSelected
-                              ? `bg-gradient-to-r ${
-                                  genreGradients[
-                                    genre.id as keyof typeof genreGradients
-                                  ] || "from-purple-600 to-pink-600"
+                                  ] || "from-neutral-900 to-stone-800"
                                 } text-white shadow-lg`
                               : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
                           }`}
@@ -290,6 +231,19 @@ export default function MovieFilters({
 
               {/* Action Buttons */}
               <div className="space-y-3">
+                {/* Explore All Genres */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => router.push("/genres")}
+                  className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-900 to-indigo-800 
+                  text-white rounded-lg hover:from-blue-800 hover:to-indigo-700 
+                  transition-all text-sm font-medium flex items-center justify-center gap-2 group"
+                >
+                  <FaTheaterMasks className="text-lg group-hover:rotate-12 transition-transform" />
+                  Explore All Genres
+                </motion.button>
+
                 {/* Reset Button */}
                 {isFiltersActive && (
                   <motion.button

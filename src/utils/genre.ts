@@ -1,3 +1,8 @@
+export interface Genre {
+  id: number;
+  name: string;
+}
+
 export const popularGenres = [28, 12, 35, 18, 27, 10749];
 
 export const genreGradients = {
