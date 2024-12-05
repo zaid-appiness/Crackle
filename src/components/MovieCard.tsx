@@ -107,6 +107,7 @@ export default function MovieCard({ movie, index }: MovieCardProps) {
                         fill
                         className="object-cover"
                         sizes="(max-width: 640px) 48px, 56px"
+                        priority
                       />
                       <div className="absolute inset-0 bg-black/20 group-hover/similar:bg-black/0 transition-colors" />
 

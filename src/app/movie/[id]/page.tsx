@@ -131,6 +131,7 @@ export default function MovieDetailPage() {
                 alt={movie.title}
                 fill
                 className="object-cover"
+                priority
               />
             </motion.div>
 

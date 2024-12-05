@@ -131,6 +131,7 @@ export default function SearchBar({ isMobile }: SearchBarProps) {
                           alt={movie.title}
                           fill
                           className="object-cover rounded-md"
+                          priority
                         />
                       </div>
                       <div className="flex-1 min-w-0">

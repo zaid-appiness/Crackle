@@ -47,7 +47,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <Link
-              href="/"
+              href="/home"
               className="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 
               text-transparent bg-clip-text hover:from-blue-400 hover:via-purple-400 hover:to-pink-400 
               transition-all duration-300"
