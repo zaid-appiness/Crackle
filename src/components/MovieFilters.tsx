@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaStar, FaFire, FaTheaterMasks } from "react-icons/fa";
-import { genres } from "@/utils/constants";
+import { genres } from "@/utils/genre";
 import { FilterState } from "@/types/filters";
 
 const popularGenres = [28, 12, 35, 18, 27, 10749];

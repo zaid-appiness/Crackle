@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { dropdownGenres } from "@/utils/constants";
+import { dropdownGenres } from "@/utils/genre";
 import { navLinks } from "@/utils/links";
 import SearchBar from "./SearchBar";
 

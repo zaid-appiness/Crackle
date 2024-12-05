@@ -8,7 +8,7 @@ import NoResults from "@/components/NoResults";
 import GenrePageSkeleton from "@/components/GenrePageSkeleton";
 import GenreListSkeleton from "@/components/GenreListSkeleton";
 import { useMovieList } from "@/hooks/useMovieList";
-import { genreData } from "@/utils/constants";
+import { genreData } from "@/utils/genre";
 import { FaArrowLeft, FaFilm, FaFire, FaStar } from "react-icons/fa";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { filterMovies } from "@/utils/helpers";
