@@ -1,18 +1,19 @@
 "use client";
 
-import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { movieApi } from "@/lib/api";
-import Loading from "@/components/Loading";
 import MovieGrid from "@/components/MovieGrid";
+import MovieGridSkeleton from "@/components/MovieGridSkeleton";
 import NoResults from "@/components/NoResults";
 import PageHeader from "@/components/PageHeader";
+import PageHeaderSkeleton from "@/components/PageHeaderSkeleton";
+import Pagination from "@/components/Pagination";
+import PaginationSkeleton from "@/components/PaginationSkeleton";
 import { useMovieList } from "@/hooks/useMovieList";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { filterMovies } from "@/utils/helpers";
-import Pagination from "@/components/Pagination";
 
-function TopRatedPageContent() {
+export default function TopRatedPage() {
   const { page, handlePageChange } = useMovieList();
   const { filters, setFilters, resetFilters } =
     usePersistedFilters("top-rated");
@@ -27,7 +28,15 @@ function TopRatedPageContent() {
     : [];
   const totalPages = Math.min(data?.total_pages ?? 0, 500);
 
-  if (isLoading) return <Loading />;
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        <PageHeaderSkeleton />
+        <MovieGridSkeleton />
+        <PaginationSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
@@ -53,13 +62,5 @@ function TopRatedPageContent() {
         </>
       )}
     </div>
-  );
-}
-
-export default function TopRatedPage() {
-  return (
-    <Suspense fallback={<Loading />}>
-      <TopRatedPageContent />
-    </Suspense>
   );
 }

@@ -1,64 +1,65 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { movieApi } from "@/lib/api";
-import Loading from "@/components/Loading";
 import MovieGrid from "@/components/MovieGrid";
 import NoResults from "@/components/NoResults";
-import PageHeader from "@/components/PageHeader";
-import { useMovieList } from "@/hooks/useMovieList";
-import { useAuth } from "@/contexts/AuthContext";
+import SearchPageSkeleton from "@/components/SearchPageSkeleton";
+import { motion } from "framer-motion";
 
-function SearchPageContent() {
+export default function SearchPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
-  const { setFilters, filterMovies } = useMovieList();
-  const router = useRouter();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (!user) {
-      router.push("/auth/login?message=Please login to search movies");
-    }
-  }, [user, router]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["search", query],
     queryFn: () => movieApi.searchMovies(query),
-    enabled: query.length > 0 && !!user,
+    enabled: !!query,
   });
 
-  const filteredMovies = data?.results ? filterMovies(data.results) : [];
+  if (isLoading) {
+    return <SearchPageSkeleton />;
+  }
 
-  if (!user) return null;
-  if (isLoading) return <Loading />;
+  if (!query) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <NoResults
+          message="Start your search"
+          subMessage="Use the search bar above to find movies"
+        />
+      </div>
+    );
+  }
+
+  if (!data?.results.length) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <NoResults
+          message="No results found"
+          subMessage="Try searching for something else"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <PageHeader
-        title={`Search Results for "${query}"`}
-        subtitle={`Found ${filteredMovies.length} movies`}
-        onFilterChange={setFilters}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-2"
+      >
+        <h1 className="text-2xl font-bold text-white">
+          Search Results for &quot;{query}&quot;
+        </h1>
+        <p className="text-gray-400">
+          Found {data.total_results.toLocaleString()} results
+        </p>
+      </motion.div>
 
-      {!filteredMovies?.length ? (
-        <NoResults
-          message="No movies found"
-          subMessage={`No results found for "${query}". Try a different search term.`}
-        />
-      ) : (
-        <MovieGrid movies={filteredMovies} prefix="search" />
-      )}
+      <MovieGrid movies={data.results} prefix="search" />
     </div>
-  );
-}
-
-export default function SearchPage() {
-  return (
-    <Suspense fallback={<Loading />}>
-      <SearchPageContent />
-    </Suspense>
   );
 }

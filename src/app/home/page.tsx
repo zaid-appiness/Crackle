@@ -8,7 +8,9 @@ import NoResults from "@/components/NoResults";
 import HeroSkeleton from "@/components/HeroSkeleton";
 import MovieGrid from "@/components/MovieGrid";
 import PageHeader from "@/components/PageHeader";
+import PageHeaderSkeleton from "@/components/PageHeaderSkeleton";
 import Pagination from "@/components/Pagination";
+import PaginationSkeleton from "@/components/PaginationSkeleton";
 import { useMovieList } from "@/hooks/useMovieList";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { filterMovies } from "@/utils/helpers";
@@ -39,10 +41,45 @@ export default function HomePage() {
 
   if (isLoading || !trendingData)
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen space-y-16">
         <HeroSkeleton />
-        <div className="container mx-auto px-4 py-8">
-          <MovieGridSkeleton />
+        <div className="container mx-auto px-4 space-y-16">
+          {/* Stats Section Skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 text-center border border-gray-700/50 animate-pulse"
+              >
+                <div className="h-8 w-24 mx-auto bg-gray-700 rounded mb-2" />
+                <div className="h-4 w-32 mx-auto bg-gray-700 rounded" />
+              </div>
+            ))}
+          </div>
+
+          {/* Popular Movies Section Skeleton */}
+          <div className="space-y-8">
+            <PageHeaderSkeleton />
+            <MovieGridSkeleton />
+            <PaginationSkeleton />
+          </div>
+
+          {/* Features Section Skeleton */}
+          <div className="py-16">
+            <div className="h-8 w-48 mx-auto bg-gray-800 rounded-lg animate-pulse mb-12" />
+            <div className="grid md:grid-cols-3 gap-8">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-800/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/30 space-y-4"
+                >
+                  <div className="h-10 w-10 bg-gray-700 rounded animate-pulse" />
+                  <div className="h-6 w-32 bg-gray-700 rounded animate-pulse" />
+                  <div className="h-20 w-full bg-gray-700 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

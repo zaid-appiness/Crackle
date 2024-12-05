@@ -12,11 +12,11 @@ import {
   FaVolumeUp,
   FaVolumeMute,
 } from "react-icons/fa";
-import Loading from "@/components/Loading";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import MovieGrid from "@/components/MovieGrid";
 import { useAuth } from "@/contexts/AuthContext";
+import MovieDetailSkeleton from "@/components/MovieDetailSkeleton";
 
 export default function MovieDetailPage() {
   const params = useParams();
@@ -65,8 +65,9 @@ export default function MovieDetailPage() {
     queryFn: () => movieApi.getMovieStream(movieId),
   });
 
-  if (isLoadingMovie) return <Loading />;
-  if (!movie) return null;
+  if (isLoadingMovie || !movie) {
+    return <MovieDetailSkeleton />;
+  }
 
   return (
     <div className="min-h-screen">
