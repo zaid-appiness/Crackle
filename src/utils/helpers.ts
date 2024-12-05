@@ -1,11 +1,15 @@
 import { Movie } from "@/types/movie";
-import { FilterState } from "@/components/MovieFilters";
+import { FilterState } from "@/types/filters";
 
-export function filterMovies(movies: Movie[], filters: FilterState) {
+export function filterMovies(movies: Movie[], filters?: FilterState) {
+  if (!filters) return movies;
+
   return movies.filter((movie) => {
-    const passesRating = movie.vote_average >= filters.rating;
+    const passesRating =
+      !filters.rating || movie.vote_average >= filters.rating;
     const passesGenre =
-      !filters.genre || movie.genre_ids.includes(filters.genre);
+      !filters.genres?.length ||
+      movie.genre_ids.some((id) => filters.genres.includes(id));
     return passesRating && passesGenre;
   });
 }
