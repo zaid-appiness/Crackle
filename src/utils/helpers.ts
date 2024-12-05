@@ -1,5 +1,11 @@
 import { Movie } from "@/types/movie";
 import { FilterState } from "@/types/filters";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export function filterMovies(movies: Movie[], filters?: FilterState) {
   if (!filters) return movies;
