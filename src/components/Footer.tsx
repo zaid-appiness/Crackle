@@ -1,10 +1,17 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { FaGithub, FaTwitter, FaInstagram } from "react-icons/fa";
 
 export default function Footer() {
+  const { user } = useAuth();
+
+  if (!user?.token) {
+    return null;
+  }
+
   const currentYear = new Date().getFullYear();
 
   return (

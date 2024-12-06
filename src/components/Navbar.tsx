@@ -87,6 +87,10 @@ export default function Navbar() {
     router.push("/genres");
   };
 
+  if (!user?.token) {
+    return null;
+  }
+
   return (
     <nav className="bg-black/90 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800">
       <div className="container mx-auto px-4">
