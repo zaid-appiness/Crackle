@@ -32,6 +32,13 @@ model User {
   emailNotifications Boolean @default(true)
   darkMode           Boolean @default(true)
 
+  // Authentication fields
+  verificationCode   String?
+  verificationExpiry DateTime?
+  isVerified        Boolean   @default(false)
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+
   accounts      Account[]
   sessions      Session[]
 }

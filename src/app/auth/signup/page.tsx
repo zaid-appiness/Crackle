@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaUser, FaGoogle } from "react-icons/fa";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import ImageUpload from "@/components/ImageUpload";
 import AlertMessage from "@/components/AlertMessage";
+import { useAuth } from "@/contexts/AuthContext";
+import ImageUpload from "@/components/ImageUpload";
 
 interface FormData {
   name: string;
@@ -23,16 +23,10 @@ export default function SignupPage() {
     image: null,
   });
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { login } = useAuth();
 
   const validateForm = () => {
-    if (!formData.name.trim()) {
-      setError("Please enter your name");
-      return false;
-    }
     if (!formData.email.trim()) {
       setError("Please enter your email");
       return false;
@@ -43,10 +37,6 @@ export default function SignupPage() {
     }
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long");
-      return false;
-    }
-    if (!formData.image) {
-      setError("Please upload a profile image");
       return false;
     }
     return true;
@@ -60,7 +50,6 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!validateForm()) return;
 
@@ -76,25 +65,16 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Signup failed");
+        throw new Error(data.error || "Failed to create account");
       }
 
-      setSuccess("Account created successfully! Redirecting to login...");
-      setTimeout(() => {
-        router.push("/auth/login?message=Account created successfully");
-      }, 2000);
+      // Use the login function from AuthContext to set the user state
+      login(data.user);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
       setIsLoading(false);
     }
   };
-
-  // Show success message from URL params (e.g., after email verification)
-  const messageFromUrl = searchParams.get("message");
-  if (messageFromUrl && !success) {
-    setSuccess(messageFromUrl);
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -104,30 +84,22 @@ export default function SignupPage() {
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
-            Or{" "}
+            Already have an account?{" "}
             <Link
               href="/auth/login"
               className="font-medium text-blue-500 hover:text-blue-400"
             >
-              sign in to your account
+              Sign in
             </Link>
           </p>
         </div>
 
-        {/* Alert Messages */}
         <AnimatePresence mode="wait">
           {error && (
             <AlertMessage
               type="error"
               message={error}
               onClose={() => setError(null)}
-            />
-          )}
-          {success && (
-            <AlertMessage
-              type="success"
-              message={success}
-              onClose={() => setSuccess(null)}
             />
           )}
         </AnimatePresence>
@@ -157,7 +129,7 @@ export default function SignupPage() {
                 border border-gray-700 placeholder-gray-400 text-white rounded-xl
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                 transition-all duration-200"
-                placeholder="Full Name"
+                placeholder="Name (optional)"
               />
             </div>
 
@@ -167,7 +139,6 @@ export default function SignupPage() {
               </div>
               <input
                 type="email"
-                required
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -177,6 +148,7 @@ export default function SignupPage() {
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                 transition-all duration-200"
                 placeholder="Email address"
+                required
               />
             </div>
 
@@ -186,7 +158,6 @@ export default function SignupPage() {
               </div>
               <input
                 type="password"
-                required
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
@@ -196,6 +167,7 @@ export default function SignupPage() {
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                 transition-all duration-200"
                 placeholder="Password"
+                required
               />
             </div>
           </div>
@@ -217,7 +189,7 @@ export default function SignupPage() {
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
               ) : (
-                "Sign up"
+                "Create Account"
               )}
             </button>
           </div>

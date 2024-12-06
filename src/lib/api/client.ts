@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { getSession, signOut } from "next-auth/react";
+import Cookies from "js-cookie";
 
 export class ApiError extends Error {
   constructor(message: string, public status: number, public code?: string) {
@@ -10,6 +10,7 @@ export class ApiError extends Error {
 
 interface ErrorResponseData {
   message?: string;
+  error?: string;
 }
 
 const api = axios.create({
@@ -22,9 +23,9 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   async (config) => {
-    const session = await getSession();
-    if (session?.user?.email) {
-      config.headers.Authorization = `Bearer ${session.user.email}`;
+    const token = Cookies.get("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -36,14 +37,23 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ErrorResponseData>) => {
     if (error.response?.status === 401) {
-      await signOut({ redirect: true, callbackUrl: "/auth/login" });
+      // Clear token and redirect to login
+      Cookies.remove("token");
+      localStorage.removeItem("user");
+      window.location.href = `/auth/login?callbackUrl=${encodeURIComponent(
+        window.location.pathname
+      )}`;
+      return Promise.reject(new ApiError("Authentication required", 401));
     }
 
-    const message = error.response?.data?.message || error.message;
+    const message =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      error.message;
     const status = error.response?.status || 500;
     const code = error.code;
 
-    throw new ApiError(message, status, code);
+    return Promise.reject(new ApiError(message, status, code));
   }
 );
 

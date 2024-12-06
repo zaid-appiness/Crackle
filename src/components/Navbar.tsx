@@ -60,10 +60,16 @@ export default function Navbar() {
       ? "text-blue-500"
       : "text-gray-300 hover:text-white transition-colors";
 
-  const handleLogout = () => {
-    startLoading();
-    logout();
-    router.push("/auth/login");
+  const handleLogout = async () => {
+    try {
+      startLoading();
+      await logout();
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      stopLoading();
+    }
   };
 
   const handleGenreClick = (genreId: number) => {

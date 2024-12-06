@@ -11,13 +11,11 @@ if (!JWT_SECRET) {
 
 export async function POST(request: Request) {
   try {
-    // Parse request body
     const body = await request.json();
     const { email, password, name, image } = body;
 
     console.log("[Signup API] Received request for:", email);
 
-    // Validate required fields
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -83,7 +81,7 @@ export async function POST(request: Request) {
       { expiresIn: "24h" }
     );
 
-    // Create response
+    // Create response with auth token
     const response = NextResponse.json(
       {
         message: "Account created successfully",
@@ -92,7 +90,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
 
-    // Set secure cookie
+    // Set secure cookie with JWT token
     response.cookies.set({
       name: "token",
       value: token,
