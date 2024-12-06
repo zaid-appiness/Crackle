@@ -1,22 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaLock } from "react-icons/fa";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AlertMessage from "@/components/AlertMessage";
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
   useEffect(() => {
     if (!token) {
@@ -34,18 +33,13 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (!password || !confirmPassword) {
-      setError("Please fill in all fields");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
       return;
     }
 
@@ -64,9 +58,13 @@ export default function ResetPasswordPage() {
         throw new Error(data.error || "Failed to reset password");
       }
 
-      setSuccess("Password reset successful! Redirecting to login...");
+      setSuccess("Password has been reset successfully");
+
+      // Redirect to login page after 2 seconds
       setTimeout(() => {
-        router.push("/auth/login");
+        router.push(
+          "/auth/login?message=Password reset successful. Please log in with your new password."
+        );
       }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -83,13 +81,7 @@ export default function ResetPasswordPage() {
             Reset your password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
-            Remember your password?{" "}
-            <Link
-              href="/auth/login"
-              className="font-medium text-blue-500 hover:text-blue-400"
-            >
-              Sign in
-            </Link>
+            Enter your new password below
           </p>
         </div>
 
@@ -125,6 +117,8 @@ export default function ResetPasswordPage() {
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                 transition-all duration-200"
                 placeholder="New password"
+                required
+                minLength={8}
               />
             </div>
 
@@ -141,6 +135,8 @@ export default function ResetPasswordPage() {
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                 transition-all duration-200"
                 placeholder="Confirm new password"
+                required
+                minLength={8}
               />
             </div>
           </div>
@@ -165,6 +161,15 @@ export default function ResetPasswordPage() {
                 "Reset password"
               )}
             </button>
+          </div>
+
+          <div className="text-center">
+            <Link
+              href="/auth/login"
+              className="text-sm text-blue-500 hover:text-blue-400 transition-colors"
+            >
+              Back to login
+            </Link>
           </div>
         </form>
       </div>

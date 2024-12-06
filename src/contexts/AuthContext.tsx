@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -31,12 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Check auth state on mount and route changes
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const checkAuth = useCallback(() => {
+    const handleLogout = () => {
+      localStorage.removeItem("user");
+      Cookies.remove("token", { path: "/" });
+      setUser(null);
+    };
 
-  const checkAuth = () => {
     try {
       const token = Cookies.get("token");
       const userData = localStorage.getItem("user");
@@ -54,18 +56,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const login = (userData: User) => {
     try {
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
 
-      // Get the callback URL from the URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const callbackUrl = urlParams.get("callbackUrl");
 
-      // Redirect to the callback URL or home
       if (callbackUrl) {
         router.push(decodeURIComponent(callbackUrl));
       } else {
@@ -73,14 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Login error:", error);
-      handleLogout();
+      localStorage.removeItem("user");
+      Cookies.remove("token", { path: "/" });
+      setUser(null);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    Cookies.remove("token", { path: "/" });
-    setUser(null);
   };
 
   const logout = async () => {
@@ -94,12 +94,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Logout failed");
       }
 
-      handleLogout();
+      localStorage.removeItem("user");
+      Cookies.remove("token", { path: "/" });
+      setUser(null);
       router.push("/auth/login");
     } catch (error) {
       console.error("Logout error:", error);
-      // Still clear local state even if API call fails
-      handleLogout();
+      localStorage.removeItem("user");
+      Cookies.remove("token", { path: "/" });
+      setUser(null);
       router.push("/auth/login");
     }
   };

@@ -17,8 +17,8 @@ export default function ForgotPasswordPage() {
     setError(null);
     setSuccess(null);
 
-    if (!email.trim()) {
-      setError("Please enter your email");
+    if (!email) {
+      setError("Please enter your email address");
       return;
     }
 
@@ -34,12 +34,10 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send reset link");
+        throw new Error(data.error || "Failed to process request");
       }
 
-      setSuccess(
-        "If an account exists with this email, you will receive a password reset link shortly."
-      );
+      setSuccess("Password reset instructions have been sent to your email");
       setEmail("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -56,13 +54,8 @@ export default function ForgotPasswordPage() {
             Reset your password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
-            Remember your password?{" "}
-            <Link
-              href="/auth/login"
-              className="font-medium text-blue-500 hover:text-blue-400"
-            >
-              Sign in
-            </Link>
+            Enter your email address and we&apos;ll send you instructions to
+            reset your password.
           </p>
         </div>
 
@@ -97,6 +90,7 @@ export default function ForgotPasswordPage() {
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
               transition-all duration-200"
               placeholder="Email address"
+              required
             />
           </div>
 
@@ -117,9 +111,18 @@ export default function ForgotPasswordPage() {
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
               ) : (
-                "Send reset link"
+                "Send reset instructions"
               )}
             </button>
+          </div>
+
+          <div className="text-center">
+            <Link
+              href="/auth/login"
+              className="text-sm text-blue-500 hover:text-blue-400 transition-colors"
+            >
+              Back to login
+            </Link>
           </div>
         </form>
       </div>

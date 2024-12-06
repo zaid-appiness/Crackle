@@ -6,8 +6,6 @@ export async function POST(request: Request) {
   try {
     const { token, password } = await request.json();
 
-    console.log("[Reset Password API] Request received");
-
     if (!token || !password) {
       return NextResponse.json(
         { error: "Token and password are required" },
@@ -26,14 +24,13 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      console.log("[Reset Password API] Invalid or expired token");
       return NextResponse.json(
         { error: "Invalid or expired reset token" },
         { status: 400 }
       );
     }
 
-    // Hash new password
+    // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Update user's password and clear reset token
@@ -46,16 +43,12 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log(
-      "[Reset Password API] Password reset successful for user:",
-      user.email
+    return NextResponse.json(
+      { message: "Password has been reset successfully" },
+      { status: 200 }
     );
-
-    return NextResponse.json({
-      message: "Password reset successful",
-    });
   } catch (error) {
-    console.error("[Reset Password API] Error:", error);
+    console.error("Reset password error:", error);
     return NextResponse.json(
       { error: "Failed to reset password" },
       { status: 500 }
