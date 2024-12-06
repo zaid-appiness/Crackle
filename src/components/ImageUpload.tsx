@@ -132,9 +132,9 @@ export default function ImageUpload({
           className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 
           group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm"
         >
-          <span className="text-white text-sm font-medium px-2 py-1 bg-black/40 rounded-md">
+          {/* <span className="text-white text-sm font-medium px-2 py-1 bg-black/40 rounded-md">
             Change Photo
-          </span>
+          </span> */}
         </div>
       </div>
 
