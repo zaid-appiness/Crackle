@@ -3,13 +3,19 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
+import UnauthorizedAccess from "@/components/UnauthorizedAccess";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // If user is already logged in, show unauthorized access page
+  if (user) {
+    return <UnauthorizedAccess />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
