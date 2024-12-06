@@ -9,6 +9,8 @@ import CookieConsent from "@/components/CookieConsent";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import LoadingBar from "@/components/LoadingBar";
+import { usePathname } from "next/navigation";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,6 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [hasConsent, setHasConsent] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const consent = localStorage.getItem("cookieConsent");
@@ -35,6 +38,9 @@ export default function RootLayout({
     localStorage.setItem("cookieConsent", "true");
     setHasConsent(true);
   };
+
+  // Check if current path is an auth page
+  const isAuthPage = pathname?.startsWith("/auth/");
 
   return (
     <html lang="en" className={inter.className}>
@@ -53,7 +59,11 @@ export default function RootLayout({
             <Navbar />
             <main className="container mx-auto px-4 py-8 min-h-screen">
               <LoadingBar />
-              {children}
+              {isAuthPage ? (
+                children
+              ) : (
+                <ProtectedRoute>{children}</ProtectedRoute>
+              )}
             </main>
             <Footer />
           </AuthProvider>

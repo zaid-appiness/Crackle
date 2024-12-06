@@ -9,13 +9,13 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 
 interface User {
   id: string;
   email: string;
   name?: string;
   image?: string;
+  token: string;
 }
 
 interface AuthContextType {
@@ -33,18 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const checkAuth = useCallback(() => {
-    const handleLogout = () => {
-      localStorage.removeItem("user");
-      Cookies.remove("token", { path: "/" });
-      setUser(null);
-    };
-
     try {
-      const token = Cookies.get("token");
       const userData = localStorage.getItem("user");
-
-      if (!token || !userData) {
-        handleLogout();
+      if (!userData) {
+        setUser(null);
         return;
       }
 
@@ -52,7 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(parsedUser);
     } catch (error) {
       console.error("Auth check error:", error);
-      handleLogout();
+      localStorage.removeItem("user");
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -66,19 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const callbackUrl = urlParams.get("callbackUrl");
-
-      if (callbackUrl) {
-        router.push(decodeURIComponent(callbackUrl));
-      } else {
-        router.push("/home");
-      }
+      router.push("/home");
     } catch (error) {
       console.error("Login error:", error);
       localStorage.removeItem("user");
-      Cookies.remove("token", { path: "/" });
       setUser(null);
     }
   };
@@ -87,7 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
-        credentials: "include",
       });
 
       if (!response.ok) {
@@ -95,13 +78,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       localStorage.removeItem("user");
-      Cookies.remove("token", { path: "/" });
       setUser(null);
       router.push("/auth/login");
     } catch (error) {
       console.error("Logout error:", error);
       localStorage.removeItem("user");
-      Cookies.remove("token", { path: "/" });
       setUser(null);
       router.push("/auth/login");
     }
