@@ -16,10 +16,8 @@ A modern, feature-rich movie streaming platform built with Next.js 13, TypeScrip
 
 - Browse popular, trending, and top-rated movies
 - Advanced filtering by rating and genres
-- Infinite scroll and pagination support
+- Pagination support
 - Movie details with trailers and recommendations
-- User watchlist and watch history
-- Movie ratings and reviews
 
 ### UI/UX
 
@@ -27,8 +25,7 @@ A modern, feature-rich movie streaming platform built with Next.js 13, TypeScrip
 - Dark mode support
 - Loading states and skeleton screens
 - Smooth animations with Framer Motion
-- Toast notifications and alerts
-- Cookie consent management
+- Alerts
 
 ### Technical Features
 
@@ -36,8 +33,7 @@ A modern, feature-rich movie streaming platform built with Next.js 13, TypeScrip
 - TypeScript for type safety
 - Prisma ORM with PostgreSQL
 - TanStack Query for data fetching
-- Zustand for state management
-- Secure API routes with rate limiting
+- Secure API routes
 - Image optimization and lazy loading
 
 ## 🚀 Getting Started
@@ -130,7 +126,7 @@ public/ # Static assets
 2. System sends verification OTP via email
 3. User verifies email with OTP
 4. JWT token issued upon successful verification
-5. Token stored in HTTP-only cookie
+5. Token stored in Local Storage
 6. Protected routes/APIs check token validity
 
 ## 🎨 Styling
@@ -147,7 +143,6 @@ public/ # Static assets
 ## 🔄 State Management
 
 - React Query for server state
-- Zustand for client state
 - Context API for auth state
 - Local storage for preferences
 
@@ -176,7 +171,6 @@ public/ # Static assets
 - Caching strategies
 - Lazy loading
 - Debounced search
-- Infinite scroll
 
 ## 🧪 Error Handling
 
