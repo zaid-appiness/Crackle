@@ -1,80 +1,75 @@
-# 🎬 Crackle - Movie Streaming Platform
+# Crackle - Movie Discovery Platform
 
-A modern, feature-rich movie streaming platform built with Next.js 13, TypeScript, and Tailwind CSS.
+A modern, feature-rich movie discovery platform built with Next.js 15, TypeScript, and Tailwind CSS. Experience seamless movie browsing with real-time search, advanced filtering, and personalized watchlists.
 
-## 🌟 Features
+## Features
 
 ### Authentication & User Management
 
-- Email/Password authentication with JWT
-- Email verification with OTP
-- Profile management with image upload
-- Secure password hashing with bcrypt
-- Protected routes and API endpoints
+- 🔐 Secure email & password authentication
+- 🔑 Password reset functionality with email verification
+- 👤 User profile management
+- 🚫 Protected routes and unauthorized access handling
 
-### Movie Experience
+### Movie Discovery
 
-- Browse popular, trending, and top-rated movies
-- Advanced filtering by rating and genres
-- Infinite scroll and pagination support
-- Movie details with trailers and recommendations
-- User watchlist and watch history
-- Movie ratings and reviews
+- 🎬 Browse popular, trending, and top-rated movies
+- 🔍 Real-time search with debounced queries
+- 🏷️ Filter movies by genre and rating
+- 📱 Responsive grid layout for optimal viewing
+- ♾️ Infinite scroll for seamless browsing
 
-### UI/UX
+### User Experience
 
-- Responsive design for all devices
-- Dark mode support
-- Loading states and skeleton screens
-- Smooth animations with Framer Motion
-- Toast notifications and alerts
-- Cookie consent management
+- 🌓 Dark mode support
+- 🍪 Cookie consent management
+- ⚡ Loading states and skeleton screens
+- 🎨 Smooth animations with Framer Motion
+- ↕️ Scroll to top functionality
+- 📊 Loading bar for navigation feedback
 
 ### Technical Features
 
-- Server-side rendering with Next.js 13
-- TypeScript for type safety
-- Prisma ORM with PostgreSQL
-- TanStack Query for data fetching
-- Zustand for state management
-- Secure API routes with rate limiting
-- Image optimization and lazy loading
+- 🚀 Server-side rendering with Next.js 15
+- 💾 PostgreSQL database with Prisma ORM
+- 🔄 React Query for efficient data fetching
+- 📦 Zustand for state management
+- 🎨 Tailwind CSS for styling
+- 📱 Fully responsive design
 
-## 🚀 Getting Started
+## Tech Stack
+
+### Frontend
+
+- Next.js 15
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- React Query
+- Zustand
+
+### Backend
+
+- Next.js API Routes
+- Prisma ORM
+- PostgreSQL
+- JWT Authentication
+- Nodemailer
+
+### Development Tools
+
+- ESLint
+- Prettier
+- PostCSS
+- Autoprefixer
+
+## Getting Started
 
 ### Prerequisites
 
 - Node.js 16.x or later
 - PostgreSQL database
 - TMDB API key
-- Gmail account (for email verification)
-
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
-\`\`\`env
-
-# Database
-
-DATABASE_URL="your-postgresql-url"
-
-# Authentication
-
-JWT_SECRET="your-jwt-secret"
-NEXTAUTH_SECRET="your-nextauth-secret"
-NEXTAUTH_URL="http://localhost:3000"
-
-# TMDB API
-
-TMDB_API_KEY="your-tmdb-api-key"
-
-# Email Configuration
-
-EMAIL_USER="your-gmail@gmail.com"
-EMAIL_PASS="your-app-specific-password"
-EMAIL_FROM="your-gmail@gmail.com"
-\`\`\`
 
 ### Installation
 
@@ -89,149 +84,54 @@ EMAIL_FROM="your-gmail@gmail.com"
    npm install
    \`\`\`
 
-3. Set up the database:
+3. Set up environment variables:
+   Create a \`.env\` file in the root directory with the following variables:
+   \`\`\`env
+   TMDB_API_KEY=your_tmdb_api_key
+   DATABASE_URL=your_postgresql_connection_string
+   JWT_SECRET=your_jwt_secret
+   GMAIL_USER=your_gmail_address
+   GMAIL_APP_PASSWORD=your_gmail_app_password
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   \`\`\`
+
+4. Initialize the database:
    \`\`\`bash
    npx prisma generate
    npx prisma db push
    \`\`\`
 
-4. Run the development server:
+5. Run the development server:
    \`\`\`bash
    npm run dev
    \`\`\`
 
-Visit \`http://localhost:3000\` to see the application.
+Visit [http://localhost:3000](http://localhost:3000) to see the application.
 
-## 📁 Project Structure
+## Project Structure
 
 \`\`\`
 src/
 ├── app/ # Next.js 13 app directory
-│ ├── api/ # API routes
-│ ├── auth/ # Authentication pages
-│ └── (routes)/ # Application routes
-├── components/ # React components
+├── components/ # Reusable React components
 ├── contexts/ # React contexts
-├── hooks/ # Custom hooks
+├── hooks/ # Custom React hooks
 ├── lib/ # Utility libraries
-│ ├── api/ # API clients
-│ └── prisma.ts # Prisma client
-├── store/ # Zustand stores
-├── types/ # TypeScript types
-└── utils/ # Utility functions
-
-prisma/ # Prisma schema and migrations
-public/ # Static assets
+├── types/ # TypeScript type definitions
+└── utils/ # Helper functions
 \`\`\`
 
-## 🔒 Authentication Flow
+## Contributing
 
-1. User signs up with email/password
-2. System sends verification OTP via email
-3. User verifies email with OTP
-4. JWT token issued upon successful verification
-5. Token stored in HTTP-only cookie
-6. Protected routes/APIs check token validity
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-## 🎨 Styling
+## License
 
-- Tailwind CSS for utility-first styling
-- Custom animations with Framer Motion
-- Responsive design breakpoints:
-  - sm: 640px
-  - md: 768px
-  - lg: 1024px
-  - xl: 1280px
-  - 2xl: 1536px
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔄 State Management
+## Acknowledgments
 
-- React Query for server state
-- Zustand for client state
-- Context API for auth state
-- Local storage for preferences
-
-## 📱 Responsive Design
-
-- Mobile-first approach
-- Fluid typography
-- Adaptive layouts
-- Touch-friendly interactions
-
-## 🔐 Security
-
-- Password hashing with bcrypt
-- JWT for authentication
-- HTTP-only cookies
-- CORS protection
-- Rate limiting
-- Input validation
-- XSS protection
-
-## ⚡ Performance
-
-- Image optimization
-- Code splitting
-- Route prefetching
-- Caching strategies
-- Lazy loading
-- Debounced search
-- Infinite scroll
-
-## 🧪 Error Handling
-
-- Global error boundary
-- API error handling
-- Loading states
-- Retry mechanisms
-- User feedback
-
-## 📦 Dependencies
-
-### Core
-
-- next: ^13.x
-- react: ^18.x
-- typescript: ^5.x
-- @prisma/client: ^6.0.1
-- @tanstack/react-query: ^5.0.0
-
-### UI/UX
-
-- tailwindcss: ^3.4.16
-- framer-motion: latest
-- react-icons: latest
-
-### Authentication
-
-- bcryptjs: ^2.4.3
-- jsonwebtoken: ^9.0.2
-- next-auth: ^4.24.10
-
-### Data Fetching
-
-- axios: latest
-- js-cookie: ^3.0.5
-
-### State Management
-
-- zustand: ^5.0.2
-
-### Development
-
-- prisma: ^6.0.1
-- postcss: ^8.4.49
-- autoprefixer: ^10.4.20
-- eslint: ^8.x
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
+- [TMDB API](https://www.themoviedb.org/documentation/api) for providing movie data
+- [Next.js](https://nextjs.org/) for the amazing framework
+- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
+- [Framer Motion](https://www.framer.com/motion/) for smooth animations
