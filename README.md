@@ -13,57 +13,33 @@ A modern, feature-rich movie discovery platform built with Next.js 15, TypeScrip
 
 ### Movie Discovery
 
-- 🎬 Browse popular, trending, and top-rated movies
-- 🔍 Real-time search with debounced queries
-- 🏷️ Filter movies by genre and rating
-- 📱 Responsive grid layout for optimal viewing
-- ♾️ Infinite scroll for seamless browsing
+- Browse popular, trending, and top-rated movies
+- Advanced filtering by rating and genres
+- Infinite scroll and pagination support
+- Movie details with trailers and recommendations
+- User watchlist and watch history
+- Movie ratings and reviews
 
-### User Experience
+### UI/UX
 
-- 🌓 Dark mode support
-- 🍪 Cookie consent management
-- ⚡ Loading states and skeleton screens
-- 🎨 Smooth animations with Framer Motion
-- ↕️ Scroll to top functionality
-- 📊 Loading bar for navigation feedback
+- Responsive design for all devices
+- Dark mode support
+- Loading states and skeleton screens
+- Smooth animations with Framer Motion
+- Toast notifications and alerts
+- Cookie consent management
 
 ### Technical Features
 
-- 🚀 Server-side rendering with Next.js 15
-- 💾 PostgreSQL database with Prisma ORM
-- 🔄 React Query for efficient data fetching
-- 📦 Zustand for state management
-- 🎨 Tailwind CSS for styling
-- 📱 Fully responsive design
+- Server-side rendering with Next.js 13
+- TypeScript for type safety
+- Prisma ORM with PostgreSQL
+- TanStack Query for data fetching
+- Zustand for state management
+- Secure API routes with rate limiting
+- Image optimization and lazy loading
 
-## Tech Stack
-
-### Frontend
-
-- Next.js 15
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- React Query
-- Zustand
-
-### Backend
-
-- Next.js API Routes
-- Prisma ORM
-- PostgreSQL
-- JWT Authentication
-- Nodemailer
-
-### Development Tools
-
-- ESLint
-- Prettier
-- PostCSS
-- Autoprefixer
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -121,17 +97,114 @@ src/
 └── utils/ # Helper functions
 \`\`\`
 
-## Contributing
+## 🔒 Authentication Flow
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+1. User signs up with email/password
+2. System sends verification OTP via email
+3. User verifies email with OTP
+4. JWT token issued upon successful verification
+5. Token stored in HTTP-only cookie
+6. Protected routes/APIs check token validity
 
-## License
+## 🎨 Styling
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Tailwind CSS for utility-first styling
+- Custom animations with Framer Motion
+- Responsive design breakpoints:
+  - sm: 640px
+  - md: 768px
+  - lg: 1024px
+  - xl: 1280px
+  - 2xl: 1536px
 
-## Acknowledgments
+## 🔄 State Management
 
-- [TMDB API](https://www.themoviedb.org/documentation/api) for providing movie data
-- [Next.js](https://nextjs.org/) for the amazing framework
-- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
-- [Framer Motion](https://www.framer.com/motion/) for smooth animations
+- React Query for server state
+- Zustand for client state
+- Context API for auth state
+- Local storage for preferences
+
+## 📱 Responsive Design
+
+- Mobile-first approach
+- Fluid typography
+- Adaptive layouts
+- Touch-friendly interactions
+
+## 🔐 Security
+
+- Password hashing with bcrypt
+- JWT for authentication
+- HTTP-only cookies
+- CORS protection
+- Rate limiting
+- Input validation
+- XSS protection
+
+## ⚡ Performance
+
+- Image optimization
+- Code splitting
+- Route prefetching
+- Caching strategies
+- Lazy loading
+- Debounced search
+- Infinite scroll
+
+## 🧪 Error Handling
+
+- Global error boundary
+- API error handling
+- Loading states
+- Retry mechanisms
+- User feedback
+
+## 📦 Dependencies
+
+### Core
+
+- next: ^13.x
+- react: ^18.x
+- typescript: ^5.x
+- @prisma/client: ^6.0.1
+- @tanstack/react-query: ^5.0.0
+
+### UI/UX
+
+- tailwindcss: ^3.4.16
+- framer-motion: latest
+- react-icons: latest
+
+### Authentication
+
+- bcryptjs: ^2.4.3
+- jsonwebtoken: ^9.0.2
+- next-auth: ^4.24.10
+
+### Data Fetching
+
+- axios: latest
+- js-cookie: ^3.0.5
+
+### State Management
+
+- zustand: ^5.0.2
+
+### Development
+
+- prisma: ^6.0.1
+- postcss: ^8.4.49
+- autoprefixer: ^10.4.20
+- eslint: ^8.x
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
